@@ -68,6 +68,6 @@ test("renders styled QR SVGs with Wikimedia logos", () => {
 
   assert.match(svg, /<circle cx="/);
   assert.match(svg, /linearGradient id="qr-dots-gradient"/);
-  assert.match(svg, /Wikimedia Commons logo/);
-  assert.match(svg, /logo-commons-arrow/);
+  assert.match(svg, /Wikimedia Commons/);
+  assert.match(svg, /stroke="#006699"/);
 });

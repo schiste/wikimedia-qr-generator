@@ -2,62 +2,115 @@ export const WIKIMEDIA_LOGOS = {
   none: {
     label: "No logo",
     shortLabel: "None",
+    sourceTitle: "",
+    color: "#64748b",
     viewBox: "0 0 1 1",
     body: ""
   },
   wikimedia: {
-    label: "Wikimedia movement logo",
+    label: "Wikimedia",
     shortLabel: "Wikimedia",
-    viewBox: "-599 -599 1198 1198",
+    sourceTitle: "File:Wikimedia-logo black.svg",
+    color: "#000000",
+    viewBox: "-16 -16 32 32",
     body: `
-      <defs>
-        <clipPath id="logo-wikimedia-a">
-          <path d="M47.5-87.5v425h-95v-425l-552-552v1250h1199v-1250z"/>
-        </clipPath>
-      </defs>
-      <g clip-path="url(#logo-wikimedia-a)">
-        <circle r="336.5" fill="#396"/>
-        <circle r="480.25" fill="none" stroke="#069" stroke-width="135.5"/>
+      <clipPath id="wikimedia-fallback-mark">
+        <path d="m1-2v12h-2v-12l-15-15v33h32v-33z"/>
+      </clipPath>
+      <g clip-path="url(#wikimedia-fallback-mark)">
+        <circle r="9" fill="#000000"/>
+        <circle fill="none" r="13" stroke="#000000" stroke-width="4"/>
       </g>
-      <circle cy="-379.5" r="184.5" fill="#900"/>
+      <circle cy="-10" r="5" fill="#000000"/>
+    `
+  },
+  wikipedia: {
+    label: "Wikipedia",
+    shortLabel: "Wikipedia",
+    sourceTitle: "File:Wikipedia-logo-v2.svg",
+    color: "#000000",
+    viewBox: "0 0 100 100",
+    body: `
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#dddddd" stroke-width="2" stroke-dasharray="4,4"/>
+      <path d="M18,25 L38,80 L50,38 L62,80 L82,25" fill="none" stroke="#111111" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="4" fill="#111111"/>
     `
   },
   commons: {
-    label: "Wikimedia Commons logo",
+    label: "Wikimedia Commons",
     shortLabel: "Commons",
-    viewBox: "-305 -516 610 820",
+    sourceTitle: "File:Commons-logo.svg",
+    color: "#006699",
+    viewBox: "0 0 100 100",
     body: `
-      <defs>
-        <clipPath id="logo-commons-c"><circle r="298"/></clipPath>
-      </defs>
-      <circle r="100" fill="#900"/>
-      <g fill="#069">
-        <g id="logo-commons-arrow" clip-path="url(#logo-commons-c)">
-          <path d="m-11 180v118h22v-118"/>
-          <path d="m-43 185l43-75 43 75"/>
-        </g>
-        <g id="logo-commons-arrows3">
-          <use href="#logo-commons-arrow" transform="rotate(45)"/>
-          <use href="#logo-commons-arrow" transform="rotate(90)"/>
-          <use href="#logo-commons-arrow" transform="rotate(135)"/>
-        </g>
-        <use href="#logo-commons-arrows3" transform="scale(-1 1)"/>
-        <path transform="rotate(-45)" stroke="#069" stroke-width="84" fill="none" d="M0-256A256 256 0 1 0 256 0C256-100 155-150 250-275"/>
-        <path d="m-23-515s-36 135-80 185 116-62 170-5-90-180-90-180z"/>
-      </g>
+      <circle cx="50" cy="50" r="34" fill="none" stroke="#006699" stroke-width="8"/>
+      <path d="M18,18 L36,36 M36,25 L36,36 L25,36" fill="none" stroke="#339966" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M82,18 L64,36 M64,25 L64,36 L75,36" fill="none" stroke="#339966" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M50,50 L50,84 M42,76 L50,84 L58,76" fill="none" stroke="#006699" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="50" cy="50" r="9" fill="#d32f2f"/>
     `
   },
   wikidata: {
-    label: "Wikidata logo",
+    label: "Wikidata",
     shortLabel: "Wikidata",
-    viewBox: "0 0 1050 590",
+    sourceTitle: "File:Wikidata-logo.svg",
+    color: "#005588",
+    viewBox: "0 0 100 100",
     body: `
-      <path d="M120 545h30V45h-30v500zm60 0h90V45h-90v500zM300 45v500h90V45h-90z" fill="#900"/>
-      <path d="M840 545h30V45h-30v500zM900 45v500h30V45h-30zM420 545h30V45h-30v500zM480 45v500h30V45h-30z" fill="#396"/>
-      <path d="M540 545h90V45h-90v500zm120 0h30V45h-30v500zM720 45v500h90V45h-90z" fill="#069"/>
+      <rect x="15" y="15" width="12" height="70" fill="#d32f2f" rx="3"/>
+      <rect x="33" y="25" width="8" height="50" fill="#d32f2f" rx="2"/>
+      <rect x="47" y="15" width="10" height="70" fill="#4caf50" rx="3"/>
+      <rect x="63" y="25" width="10" height="50" fill="#2196f3" rx="3"/>
+      <rect x="79" y="15" width="8" height="70" fill="#2196f3" rx="2"/>
+    `
+  },
+  wikisource: {
+    label: "Wikisource",
+    shortLabel: "Wikisource",
+    sourceTitle: "File:Wikisource-logo.svg",
+    color: "#0d47a1",
+    viewBox: "0 0 100 100",
+    body: `
+      <polygon points="50,12 82,72 18,72" fill="#90caf9" stroke="#0d47a1" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="50,12 66,72 34,72" fill="#42a5f5" stroke="#0d47a1" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M10,82 L90,82" stroke="#0d47a1" stroke-width="7" stroke-linecap="round"/>
+    `
+  },
+  wiktionary: {
+    label: "Wiktionary",
+    shortLabel: "Wiktionary",
+    sourceTitle: "File:Wiktionary-logo-v2.svg",
+    color: "#4a4a4a",
+    viewBox: "0 0 100 100",
+    body: `
+      <rect x="15" y="15" width="70" height="70" rx="12" fill="#ffffff" stroke="#333333" stroke-width="7"/>
+      <text x="50" y="67" font-family="serif" font-weight="bold" font-size="52" text-anchor="middle" fill="#333333">W</text>
+    `
+  },
+  mediawiki: {
+    label: "MediaWiki",
+    shortLabel: "MediaWiki",
+    sourceTitle: "File:MediaWiki-2020-icon.svg",
+    color: "#334466",
+    viewBox: "0 0 100 100",
+    body: `
+      <path d="M22,18 L8,18 L8,82 L22,82" fill="none" stroke="#334466" stroke-width="9" stroke-linecap="square"/>
+      <path d="M78,18 L92,18 L92,82 L78,82" fill="none" stroke="#334466" stroke-width="9" stroke-linecap="square"/>
+      <text x="50" y="58" font-family="monospace" font-weight="bold" font-size="34" text-anchor="middle" fill="#006699">mw</text>
     `
   }
 };
+
+export const CENTER_LOGO_IDS = [
+  "none",
+  "wikimedia",
+  "wikipedia",
+  "commons",
+  "wikidata",
+  "wikisource",
+  "wiktionary",
+  "mediawiki"
+];
 
 export function getLogo(id) {
   return WIKIMEDIA_LOGOS[id] || WIKIMEDIA_LOGOS.none;
@@ -69,5 +122,5 @@ export function renderLogoPreview(id) {
     return "";
   }
 
-  return `<svg viewBox="${logo.viewBox}" aria-hidden="true" focusable="false">${logo.body}</svg>`;
+  return `<svg viewBox="${logo.viewBox}" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">${logo.body}</svg>`;
 }
