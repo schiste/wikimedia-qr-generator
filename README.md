@@ -13,7 +13,7 @@ The QR code is generated locally in the browser. The service has no runtime depe
 - Export QR codes as SVG or PNG with a separate preview size and export resolution.
 - Adjust error correction, module shape, quiet zone, solid or gradient color, size, and colors.
 - Uses the same compact app shell, control density, and Wikimedia logo approach as the sibling `logo-gen` tool.
-- Run as a static site on GitHub Pages, Cloudflare Pages, Netlify, or any simple web host.
+- Run as a static site on Toolforge, GitHub Pages, Cloudflare Pages, Netlify, or any simple web host.
 
 ## Local Development
 
@@ -32,6 +32,24 @@ npm run check
 ## Repository
 
 Intended GitHub repository: `schiste/wikimedia-qr-generator`.
+
+## Deploying On Toolforge
+
+This repo is prepared for the `schiste` Toolforge tool account. The default deploy syncs static files to `/data/project/schiste/public_html` and installs `toolforge/service.template` for `https://schiste.toolforge.org/`.
+
+Dry-run first:
+
+```sh
+TOOLFORGE_SSH_KEY=~/.ssh/toolforge npm run deploy:toolforge:dry-run
+```
+
+Deploy and restart/start the webservice:
+
+```sh
+TOOLFORGE_SSH_KEY=~/.ssh/toolforge npm run deploy:toolforge:restart
+```
+
+See [docs/toolforge.md](docs/toolforge.md) for alternate login names, direct static hosting, and manual webservice commands.
 
 ## Deploying On GitHub Pages
 

@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
     "check": "node --check src/app.js && node --check src/bulk.js && node --check src/export.js && node --check src/qr.js && node --check src/wikimedia.js && node --check src/zip.js && node --test",
+    "deploy:toolforge": "scripts/deploy-toolforge.sh --apply",
+    "deploy:toolforge:dry-run": "scripts/deploy-toolforge.sh --dry-run",
+    "deploy:toolforge:restart": "scripts/deploy-toolforge.sh --apply --restart",
     "test": "node --test"
   }
 }
