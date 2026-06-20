@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#fff"/>
-  <path fill="#202122" d="M8 8h18v18H8zM38 8h18v18H38zM8 38h18v18H8zM14 14v6h6v-6zM44 14v6h6v-6zM14 44v6h6v-6zM32 32h6v6h-6zM44 32h12v6H44zM32 44h6v12h-6zM44 44h6v6h-6zM50 50h6v6h-6z"/>
-  <path fill="#36c" d="M30 8h4v18h-4z"/>
-  <path fill="#00af89" d="M38 30h18v4H38z"/>
-  <path fill="#d33" d="M30 38h4v18h-4z"/>
+  <rect width="64" height="64" rx="12" fill="#0ea5e9"/>
+  <g transform="translate(32 35) scale(1.55)" fill="#fff">
+    <clipPath id="a">
+      <path d="m1-2v12h-2v-12l-15-15v33h32v-33z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+      <circle r="9"/>
+      <circle r="13" fill="none" stroke="#fff" stroke-width="4"/>
+    </g>
+    <circle cy="-10" r="5"/>
+  </g>
 </svg>

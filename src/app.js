@@ -8,6 +8,10 @@ import {
 import { getLogo, renderLogoPreview } from "./logos.js";
 
 const form = document.querySelector("#qr-form");
+const appShell = document.querySelector("#app-shell");
+const brandMark = document.querySelector("#brand-mark");
+const themeDarkButton = document.querySelector("#theme-dark");
+const themeLightButton = document.querySelector("#theme-light");
 const buildMode = document.querySelector("#build-mode");
 const directMode = document.querySelector("#direct-mode");
 const builderFields = document.querySelector("#builder-fields");
@@ -69,9 +73,25 @@ buildMode.addEventListener("click", () => setMode("build"));
 directMode.addEventListener("click", () => setMode("direct"));
 downloadQrButton.addEventListener("click", downloadSelectedFormat);
 copySvgButton.addEventListener("click", copySvg);
+themeDarkButton.addEventListener("click", () => setTheme("dark"));
+themeLightButton.addEventListener("click", () => setTheme("light"));
 
+brandMark.innerHTML = renderLogoPreview("wikimedia");
 initializeLogoPicker();
+setTheme(localStorage.getItem("wikimedia-qr-theme") || "dark");
 setMode("build");
+
+function setTheme(nextTheme) {
+  const theme = nextTheme === "light" ? "light" : "dark";
+  appShell.classList.toggle("theme-light", theme === "light");
+  appShell.classList.toggle("theme-dark", theme === "dark");
+  document.documentElement.dataset.theme = theme;
+  themeDarkButton.classList.toggle("active", theme === "dark");
+  themeLightButton.classList.toggle("active", theme === "light");
+  themeDarkButton.setAttribute("aria-pressed", String(theme === "dark"));
+  themeLightButton.setAttribute("aria-pressed", String(theme === "light"));
+  localStorage.setItem("wikimedia-qr-theme", theme);
+}
 
 function setMode(nextMode) {
   mode = nextMode;

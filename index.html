@@ -10,25 +10,37 @@
     <script type="module" src="src/app.js"></script>
   </head>
   <body>
-    <main class="app-shell">
-      <section class="workspace" aria-labelledby="app-title">
-        <div class="workspace__header">
+    <div class="app-shell theme-dark" id="app-shell">
+      <a class="skip-link" href="#workspace-preview">Skip to QR preview</a>
+
+      <header class="top-band">
+        <div class="top-band-title">
+          <div class="brand-mark" id="brand-mark" aria-hidden="true"></div>
           <div>
-            <p class="eyebrow">Community tool</p>
-            <h1 id="app-title">Wikimedia QR Generator</h1>
+            <h1>Wikimedia QR Generator</h1>
+            <p>Client-side codes for movement links and campaign pages.</p>
           </div>
-          <p class="privacy-note">Client-side SVG and PNG export</p>
         </div>
 
-        <div class="generator-grid">
-          <form class="controls" id="qr-form">
+        <div class="top-band-actions">
+          <a class="header-button" href="https://github.com/schiste/wikimedia-qr-generator">Source</a>
+          <div class="theme-toggle" role="group" aria-label="Interface theme">
+            <button class="active" id="theme-dark" type="button" aria-label="Dark interface" aria-pressed="true">D</button>
+            <button id="theme-light" type="button" aria-label="Light interface" aria-pressed="false">L</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-body">
+        <aside class="sidebar control-scrollbar" aria-label="QR controls">
+          <form class="sidebar-body controls" id="qr-form">
             <section class="control-section" aria-labelledby="content-heading">
               <div class="section-heading">
-                <span class="section-heading__index">1</span>
-                <div>
-                  <h2 id="content-heading">Content</h2>
-                  <p>Build a Wikimedia page URL or paste a campaign link.</p>
+                <div class="section-title">
+                  <span class="status-dot" aria-hidden="true"></span>
+                  <h2 id="content-heading">1. Content</h2>
                 </div>
+                <span class="section-meta">Target</span>
               </div>
 
               <div class="mode-switch" role="tablist" aria-label="QR target mode">
@@ -83,11 +95,11 @@
 
             <section class="control-section" aria-labelledby="style-heading">
               <div class="section-heading">
-                <span class="section-heading__index">2</span>
-                <div>
-                  <h2 id="style-heading">Style</h2>
-                  <p>Shape and color controls render directly in the exported SVG.</p>
+                <div class="section-title">
+                  <span class="status-dot status-dot-amber" aria-hidden="true"></span>
+                  <h2 id="style-heading">2. QR Style</h2>
                 </div>
+                <span class="section-meta">SVG</span>
               </div>
 
               <div class="options-grid" aria-label="QR options">
@@ -147,73 +159,81 @@
 
             <section class="control-section logo-panel" aria-labelledby="logo-heading">
               <div class="section-heading">
-                <span class="section-heading__index">3</span>
-                <div>
-                  <h2 id="logo-heading">Center Logo</h2>
-                  <p>Preset marks only; no custom uploads or third-party logos.</p>
+                <div class="section-title">
+                  <span class="status-dot status-dot-red" aria-hidden="true"></span>
+                  <h2 id="logo-heading">3. Center Logo</h2>
                 </div>
-              </div>
-              <div class="logo-picker" id="logo-picker" aria-label="Wikimedia logo presets">
-                <button class="logo-option is-active" type="button" data-logo="none" aria-pressed="true">
-                  <span class="logo-option__empty" aria-hidden="true"></span>
-                  <span>None</span>
-                </button>
-                <button class="logo-option" type="button" data-logo="wikimedia" aria-pressed="false">
-                  <span class="logo-option__mark"></span>
-                  <span>Wikimedia</span>
-                </button>
-                <button class="logo-option" type="button" data-logo="commons" aria-pressed="false">
-                  <span class="logo-option__mark"></span>
-                  <span>Commons</span>
-                </button>
-                <button class="logo-option" type="button" data-logo="wikidata" aria-pressed="false">
-                  <span class="logo-option__mark"></span>
-                  <span>Wikidata</span>
-                </button>
+                <span class="section-meta">Wikimedia only</span>
               </div>
 
-              <label class="field" id="logo-size-field">
-                <span>Logo size</span>
-                <input id="logo-size" type="range" min="18" max="32" value="24">
-              </label>
+              <div class="central-logo-panel">
+                <div class="logo-picker" id="logo-picker" aria-label="Wikimedia logo presets">
+                  <button class="logo-option is-active" type="button" data-logo="none" aria-pressed="true">
+                    <span class="logo-option__empty" aria-hidden="true"></span>
+                    <span>None</span>
+                  </button>
+                  <button class="logo-option" type="button" data-logo="wikimedia" aria-pressed="false">
+                    <span class="logo-option__mark"></span>
+                    <span>Wikimedia</span>
+                  </button>
+                  <button class="logo-option" type="button" data-logo="commons" aria-pressed="false">
+                    <span class="logo-option__mark"></span>
+                    <span>Commons</span>
+                  </button>
+                  <button class="logo-option" type="button" data-logo="wikidata" aria-pressed="false">
+                    <span class="logo-option__mark"></span>
+                    <span>Wikidata</span>
+                  </button>
+                </div>
+
+                <label class="field" id="logo-size-field">
+                  <span>Logo size</span>
+                  <input id="logo-size" type="range" min="18" max="32" value="24">
+                </label>
+              </div>
+
+              <p class="section-note">Preset SVG marks are bundled locally so export does not depend on remote image loading.</p>
             </section>
           </form>
+        </aside>
 
-          <section class="preview-pane" aria-label="Generated QR code">
-            <div class="preview-pane__topline">
-              <div>
-                <p class="preview-pane__label">Target</p>
-                <output class="target-url" id="target-url"></output>
-              </div>
-              <output class="qr-meta" id="qr-meta"></output>
+        <main class="workspace" id="workspace-preview">
+          <div class="workspace-toolbar">
+            <div>
+              <span class="toolbar-label">Target</span>
+              <output class="target-url" id="target-url"></output>
             </div>
+            <output class="qr-meta" id="qr-meta"></output>
+          </div>
 
-            <div class="qr-stage" id="qr-stage" aria-live="polite"></div>
+          <section class="canvas-stage" aria-label="Generated QR code">
+            <div class="canvas-frame qr-stage" id="qr-stage" aria-live="polite"></div>
+            <div class="canvas-metadata">
+              <span id="scan-status-text">Active and scannable</span>
+              <span>Client-side SVG and PNG export</span>
+            </div>
+          </section>
 
-            <p class="status-line" id="status-line" role="status"></p>
-
-            <div class="scan-status">
-              <div>
-                <span class="scan-status__label">Status</span>
-                <strong id="scan-status-text">Active and scannable</strong>
-              </div>
-              <span class="scan-status__dot" aria-hidden="true"></span>
+          <div class="export-bar">
+            <div class="export-info">
+              <strong>Publish QR Code</strong>
+              <p class="status-line" id="status-line" role="status"></p>
             </div>
 
             <div class="export-controls" aria-label="Export settings">
               <label class="field">
-                <span>File format</span>
+                <span>Format</span>
                 <select id="download-format">
                   <option value="png">PNG</option>
                   <option value="svg">SVG</option>
                 </select>
               </label>
               <label class="field">
-                <span>Export size</span>
+                <span>Size</span>
                 <select id="export-size">
-                  <option value="300">300 x 300</option>
-                  <option value="600" selected>600 x 600</option>
-                  <option value="1200">1200 x 1200</option>
+                  <option value="300">300</option>
+                  <option value="600" selected>600</option>
+                  <option value="1200">1200</option>
                 </select>
               </label>
             </div>
@@ -222,14 +242,14 @@
               <button class="button button--primary" id="download-qr" type="button">Download QR</button>
               <button class="button" id="copy-svg" type="button">Copy SVG</button>
             </div>
-          </section>
-        </div>
-      </section>
-      <footer class="site-footer">
+          </div>
+        </main>
+      </div>
+
+      <footer class="app-footer">
         <span>AGPL-3.0-or-later</span>
-        <a href="https://github.com/schiste/wikimedia-qr-generator">Source</a>
         <span>Community tool, not an official Wikimedia Foundation service.</span>
       </footer>
-    </main>
+    </div>
   </body>
 </html>
