@@ -426,6 +426,17 @@
               <button class="secondary-action" id="download-svg" type="button">Download SVG</button>
               <button class="primary-action" id="download-png" type="button">Download PNG</button>
             </div>
+
+            <div class="bulk-generator" aria-label="Bulk generation">
+              <label class="bulk-url-field" for="bulk-urls">
+                <span>Bulk generation</span>
+                <textarea id="bulk-urls" rows="3" spellcheck="false" placeholder="https://en.wikipedia.org/wiki/QR_code, https://commons.wikimedia.org/"></textarea>
+              </label>
+              <div class="bulk-actions">
+                <button class="secondary-action" id="bulk-generate" type="button">Generate ZIP</button>
+                <output class="bulk-status" id="bulk-status" aria-live="polite"></output>
+              </div>
+            </div>
           </div>
         </main>
       </div>

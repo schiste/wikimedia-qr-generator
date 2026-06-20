@@ -1,6 +1,8 @@
 import { createQrCode } from "./qr.js";
+import { bulkQrFileName, parseBulkUrlList } from "./bulk.js";
 import { addPrintBleedToSvg, getExportPixelSize } from "./export.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
+import { createZipBlob } from "./zip.js";
 import {
   getLogoLibraryPreviewUrl,
   getLogoLibraryEntry,
@@ -81,6 +83,9 @@ const printBleedInput = document.querySelector("#print-bleed");
 const copySvgButton = document.querySelector("#copy-svg");
 const downloadSvgButton = document.querySelector("#download-svg");
 const downloadPngButton = document.querySelector("#download-png");
+const bulkUrlsInput = document.querySelector("#bulk-urls");
+const bulkGenerateButton = document.querySelector("#bulk-generate");
+const bulkStatus = document.querySelector("#bulk-status");
 
 const STORAGE_VERSION = 1;
 const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
@@ -212,6 +217,7 @@ printBleedInput.addEventListener("change", render);
 copySvgButton.addEventListener("click", () => runExportAction(copySvg));
 downloadSvgButton.addEventListener("click", () => runExportAction(downloadSvg));
 downloadPngButton.addEventListener("click", () => runExportAction(() => downloadPng(Number(exportSizeInput.value))));
+bulkGenerateButton.addEventListener("click", runBulkGeneration);
 themeDarkButton.addEventListener("click", () => setTheme("dark"));
 themeLightButton.addEventListener("click", () => setTheme("light"));
 document.addEventListener("mousedown", (event) => {
@@ -264,42 +270,22 @@ function setContentType(nextType) {
 
 function render() {
   try {
-    const activeLogo = getActiveLogo(selectedLogo);
     logoSizeField.classList.toggle("is-hidden", selectedLogo === "none");
     accentColorField.classList.toggle("is-hidden", colorModeInput.value !== "gradient");
     updateLogoDetails();
     syncColorRows();
 
     const content = compileContentPayload();
-
-    const effectiveErrorCorrection = selectedLogo === "none"
-      ? errorCorrectionInput.value
-      : "high";
-    const qr = createQrCode(content.payload, {
-      errorCorrection: effectiveErrorCorrection
-    });
-
-    const margin = Number(marginInput.value);
+    const qrAsset = createStyledQrSvg(content.payload);
     const previewSize = Number(sizeInput.value);
     currentPngSize = previewSize;
     currentUrl = content.payload;
-    currentSvg = qr.toSvg({
-      margin,
-      foreground: foregroundInput.value,
-      foregroundSecondary: foregroundSecondaryInput.value,
-      background: backgroundInput.value,
-      moduleStyle: moduleStyleInput.value,
-      cornerSquareStyle: cornerSquareStyleInput.value,
-      cornerDotStyle: cornerDotStyleInput.value,
-      colorMode: colorModeInput.value,
-      logo: activeLogo,
-      logoSize: Number(logoSizeInput.value) / 100
-    });
+    currentSvg = qrAsset.svg;
 
     qrStage.style.setProperty("--qr-preview-size", `${previewSize}px`);
     qrStage.innerHTML = currentSvg;
     targetUrlOutput.value = content.label;
-    qrMetaOutput.value = `v${qr.version} / ${qr.size} modules / EC ${qr.errorCorrection}`;
+    qrMetaOutput.value = `v${qrAsset.qr.version} / ${qrAsset.qr.size} modules / EC ${qrAsset.qr.errorCorrection}`;
 
     if (selectedLogo !== "none") {
       setStatus(
@@ -328,6 +314,32 @@ function render() {
     setStatus(error.message, "error");
     setActionState(true);
   }
+}
+
+function createStyledQrSvg(payload) {
+  const qr = createQrCode(payload, {
+    errorCorrection: getEffectiveErrorCorrection()
+  });
+
+  return {
+    qr,
+    svg: qr.toSvg({
+      margin: Number(marginInput.value),
+      foreground: foregroundInput.value,
+      foregroundSecondary: foregroundSecondaryInput.value,
+      background: backgroundInput.value,
+      moduleStyle: moduleStyleInput.value,
+      cornerSquareStyle: cornerSquareStyleInput.value,
+      cornerDotStyle: cornerDotStyleInput.value,
+      colorMode: colorModeInput.value,
+      logo: getActiveLogo(selectedLogo),
+      logoSize: Number(logoSizeInput.value) / 100
+    })
+  };
+}
+
+function getEffectiveErrorCorrection() {
+  return selectedLogo === "none" ? errorCorrectionInput.value : "high";
 }
 
 function compileContentPayload() {
@@ -1089,6 +1101,12 @@ function setActionState(disabled) {
   copySvgButton.disabled = disabled;
   downloadSvgButton.disabled = disabled;
   downloadPngButton.disabled = disabled;
+  bulkGenerateButton.disabled = disabled;
+}
+
+function setBulkStatus(message, tone = "") {
+  bulkStatus.value = message;
+  bulkStatus.dataset.tone = tone;
 }
 
 async function runExportAction(action) {
@@ -1102,16 +1120,63 @@ async function runExportAction(action) {
   }
 }
 
+async function runBulkGeneration() {
+  setActionState(true);
+  try {
+    await generateBulkZip();
+  } catch (error) {
+    const message = error.message || "Bulk generation failed.";
+    setStatus(message, "error");
+    setBulkStatus(message, "error");
+  } finally {
+    setActionState(!currentSvg);
+  }
+}
+
 function downloadSvg() {
   downloadBlob(`${fileBaseName()}${fileExportSuffix()}.svg`, new Blob([getExportSvg()], { type: "image/svg+xml" }));
   setStatus("SVG downloaded.", "success");
 }
 
 async function downloadPng(size = currentPngSize) {
-  const image = new Image();
-  const svgBlob = new Blob([getExportSvg()], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(svgBlob);
   const dimensions = getExportPixelSize(size, printBleedInput.checked);
+  const blob = await createPngBlob(getExportSvg(), dimensions.total);
+
+  downloadBlob(`${fileBaseName()}${fileExportSuffix()}.png`, blob);
+  setStatus(`PNG downloaded at ${dimensions.total} x ${dimensions.total}.`, "success");
+}
+
+async function generateBulkZip() {
+  const urls = parseBulkUrlList(bulkUrlsInput.value);
+  const dimensions = getExportPixelSize(Number(exportSizeInput.value), printBleedInput.checked);
+  const suffix = fileExportSuffix();
+  const files = [];
+
+  setBulkStatus(`Validated ${urls.length} URL${urls.length === 1 ? "" : "s"}.`, "success");
+
+  for (const [index, url] of urls.entries()) {
+    const svg = addPrintBleedToSvg(createStyledQrSvg(url).svg, {
+      background: backgroundInput.value,
+      enabled: printBleedInput.checked
+    });
+    const blob = await createPngBlob(svg, dimensions.total);
+    files.push({
+      name: bulkQrFileName(url, index, { suffix }),
+      data: new Uint8Array(await blob.arrayBuffer())
+    });
+    setBulkStatus(`Generated ${index + 1}/${urls.length}.`, "success");
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+  }
+
+  downloadBlob(`wikimedia-qr-bulk${suffix}.zip`, createZipBlob(files));
+  setStatus(`Bulk ZIP downloaded with ${urls.length} QR code${urls.length === 1 ? "" : "s"}.`, "success");
+  setBulkStatus(`Downloaded ${urls.length} QR code${urls.length === 1 ? "" : "s"} as PNG ZIP.`, "success");
+}
+
+async function createPngBlob(svg, size) {
+  const image = new Image();
+  const svgBlob = new Blob([svg], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(svgBlob);
 
   try {
     await new Promise((resolve, reject) => {
@@ -1121,20 +1186,22 @@ async function downloadPng(size = currentPngSize) {
     });
 
     const canvas = document.createElement("canvas");
-    canvas.width = dimensions.total;
-    canvas.height = dimensions.total;
+    canvas.width = size;
+    canvas.height = size;
     const context = canvas.getContext("2d");
     if (!context) {
       throw new Error("Could not create a PNG canvas.");
     }
     context.fillStyle = backgroundInput.value;
-    context.fillRect(0, 0, dimensions.total, dimensions.total);
+    context.fillRect(0, 0, size, size);
     context.imageSmoothingEnabled = false;
-    context.drawImage(image, 0, 0, dimensions.total, dimensions.total);
+    context.drawImage(image, 0, 0, size, size);
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-    downloadBlob(`${fileBaseName()}${fileExportSuffix()}.png`, blob);
-    setStatus(`PNG downloaded at ${dimensions.total} x ${dimensions.total}.`, "success");
+    if (!blob) {
+      throw new Error("Could not build the PNG file.");
+    }
+    return blob;
   } finally {
     URL.revokeObjectURL(url);
   }

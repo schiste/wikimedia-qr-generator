@@ -1323,6 +1323,71 @@ a:focus-visible {
   padding: 16px 24px;
 }
 
+.bulk-generator {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 14px;
+}
+
+.bulk-url-field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.bulk-url-field span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.bulk-url-field textarea {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  outline: none;
+}
+
+.bulk-url-field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.bulk-actions {
+  display: grid;
+  min-width: 170px;
+  gap: 8px;
+  justify-items: end;
+}
+
+.bulk-status {
+  min-height: 15px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.bulk-status[data-tone="error"] {
+  color: var(--red);
+}
+
+.bulk-status[data-tone="success"] {
+  color: var(--green);
+}
+
 .export-info strong {
   display: block;
   color: var(--text);
@@ -1532,6 +1597,18 @@ a:focus-visible {
     display: grid;
     grid-template-columns: 1fr;
     justify-content: stretch;
+  }
+
+  .bulk-generator {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-actions {
+    justify-items: stretch;
+  }
+
+  .bulk-status {
+    text-align: left;
   }
 
   .primary-action,
