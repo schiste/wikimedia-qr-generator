@@ -34,11 +34,40 @@
       <div class="app-body">
         <aside class="sidebar control-scrollbar" aria-label="QR controls">
           <form class="sidebar-body controls" id="qr-form">
-            <section class="control-section" aria-labelledby="content-heading">
+            <section class="control-section" aria-labelledby="ready-presets-heading">
               <div class="section-heading">
                 <div class="section-title">
                   <span class="status-dot" aria-hidden="true"></span>
-                  <h2 id="content-heading">1. Content</h2>
+                  <h2 id="ready-presets-heading">1. Ready QR Presets</h2>
+                </div>
+                <span class="section-meta">Templates</span>
+              </div>
+
+              <div class="preset-grid" role="group" aria-label="Ready QR presets">
+                <button class="preset-button" type="button" data-preset="article">
+                  <strong>Wikipedia Article</strong>
+                  <span>Article link / Wikipedia center</span>
+                </button>
+                <button class="preset-button" type="button" data-preset="commons">
+                  <strong>Commons File</strong>
+                  <span>Media page / Commons center</span>
+                </button>
+                <button class="preset-button" type="button" data-preset="wikidata">
+                  <strong>Wikidata Item</strong>
+                  <span>Entity page / Wikidata center</span>
+                </button>
+                <button class="preset-button" type="button" data-preset="campaign">
+                  <strong>Campaign Link</strong>
+                  <span>Direct URL / Wikimedia center</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="control-section" aria-labelledby="content-heading">
+              <div class="section-heading">
+                <div class="section-title">
+                  <span class="status-dot status-dot-green" aria-hidden="true"></span>
+                  <h2 id="content-heading">2. Content</h2>
                 </div>
                 <span class="section-meta">Target</span>
               </div>
@@ -93,11 +122,53 @@
               </div>
             </section>
 
+            <section class="control-section logo-panel" aria-labelledby="logo-heading">
+              <div class="section-heading">
+                <div class="section-title">
+                  <span class="status-dot status-dot-red" aria-hidden="true"></span>
+                  <h2 id="logo-heading">3. Central Logo</h2>
+                </div>
+                <span class="section-meta" id="logo-meta">ID: none</span>
+              </div>
+
+              <div class="central-logo-panel">
+                <label class="central-logo-picker">
+                  <span class="central-logo-glyph" id="selected-logo-glyph" aria-hidden="true"></span>
+                  <span class="central-logo-label">Central logo</span>
+                  <select class="central-logo-select" id="logo-select" aria-describedby="central-logo-details">
+                    <option value="none">None</option>
+                  </select>
+                </label>
+
+                <dl class="central-logo-details" id="central-logo-details">
+                  <div>
+                    <dt>ID</dt>
+                    <dd><code id="logo-detail-id">none</code></dd>
+                  </div>
+                  <div>
+                    <dt>Source</dt>
+                    <dd id="logo-detail-source">No logo selected</dd>
+                  </div>
+                  <div>
+                    <dt>QR</dt>
+                    <dd id="logo-detail-mode">Standard EC</dd>
+                  </div>
+                </dl>
+
+                <label class="field" id="logo-size-field">
+                  <span>Logo size</span>
+                  <input id="logo-size" type="range" min="18" max="32" value="24">
+                </label>
+              </div>
+
+              <p class="section-note">Same bundled Wikimedia glyph set as the logo generator; no uploads and no non-Wikimedia marks.</p>
+            </section>
+
             <section class="control-section" aria-labelledby="style-heading">
               <div class="section-heading">
                 <div class="section-title">
                   <span class="status-dot status-dot-amber" aria-hidden="true"></span>
-                  <h2 id="style-heading">2. QR Style</h2>
+                  <h2 id="style-heading">4. QR Style</h2>
                 </div>
                 <span class="section-meta">SVG</span>
               </div>
@@ -135,64 +206,44 @@
                   <input id="margin" type="range" min="2" max="8" value="4">
                 </label>
 
-                <label class="field">
+                <label class="field field--wide">
                   <span>Preview size</span>
                   <input id="size" type="range" min="192" max="1024" step="16" value="512">
                 </label>
 
-                <div class="swatches" aria-label="QR colors">
-                  <label>
-                    <span>Ink</span>
-                    <input id="foreground" type="color" value="#202122">
-                  </label>
-                  <label id="accent-color-field" class="is-hidden">
-                    <span>Accent</span>
-                    <input id="foreground-secondary" type="color" value="#14866d">
-                  </label>
-                  <label>
-                    <span>Paper</span>
-                    <input id="background" type="color" value="#ffffff">
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section class="control-section logo-panel" aria-labelledby="logo-heading">
-              <div class="section-heading">
-                <div class="section-title">
-                  <span class="status-dot status-dot-red" aria-hidden="true"></span>
-                  <h2 id="logo-heading">3. Center Logo</h2>
-                </div>
-                <span class="section-meta">Wikimedia only</span>
-              </div>
-
-              <div class="central-logo-panel">
-                <div class="logo-picker" id="logo-picker" aria-label="Wikimedia logo presets">
-                  <button class="logo-option is-active" type="button" data-logo="none" aria-pressed="true">
-                    <span class="logo-option__empty" aria-hidden="true"></span>
-                    <span>None</span>
-                  </button>
-                  <button class="logo-option" type="button" data-logo="wikimedia" aria-pressed="false">
-                    <span class="logo-option__mark"></span>
-                    <span>Wikimedia</span>
-                  </button>
-                  <button class="logo-option" type="button" data-logo="commons" aria-pressed="false">
-                    <span class="logo-option__mark"></span>
-                    <span>Commons</span>
-                  </button>
-                  <button class="logo-option" type="button" data-logo="wikidata" aria-pressed="false">
-                    <span class="logo-option__mark"></span>
-                    <span>Wikidata</span>
-                  </button>
+                <div class="palette-panel">
+                  <span class="compact-label" id="ink-color-heading">Ink hue</span>
+                  <div class="color-row" role="group" aria-labelledby="ink-color-heading">
+                    <button type="button" data-color-target="foreground" data-color="#202122" style="background-color:#202122" aria-label="Codex black"></button>
+                    <button type="button" data-color-target="foreground" data-color="#006bb6" style="background-color:#006bb6" aria-label="Wikimedia blue"></button>
+                    <button type="button" data-color-target="foreground" data-color="#00866a" style="background-color:#00866a" aria-label="Wikimedia green"></button>
+                    <button type="button" data-color-target="foreground" data-color="#970302" style="background-color:#970302" aria-label="Wikimedia red"></button>
+                    <button type="button" data-color-target="foreground" data-color="#5748b5" style="background-color:#5748b5" aria-label="Wikimedia purple"></button>
+                    <input id="foreground" type="color" value="#202122" aria-label="Custom ink color">
+                  </div>
                 </div>
 
-                <label class="field" id="logo-size-field">
-                  <span>Logo size</span>
-                  <input id="logo-size" type="range" min="18" max="32" value="24">
-                </label>
-              </div>
+                <div class="palette-panel is-hidden" id="accent-color-field">
+                  <span class="compact-label" id="accent-color-heading">Gradient accent</span>
+                  <div class="color-row" role="group" aria-labelledby="accent-color-heading">
+                    <button type="button" data-color-target="foreground-secondary" data-color="#14866d" style="background-color:#14866d" aria-label="Green accent"></button>
+                    <button type="button" data-color-target="foreground-secondary" data-color="#049dff" style="background-color:#049dff" aria-label="Bright blue accent"></button>
+                    <button type="button" data-color-target="foreground-secondary" data-color="#e679a6" style="background-color:#e679a6" aria-label="Pink accent"></button>
+                    <button type="button" data-color-target="foreground-secondary" data-color="#f0bc00" style="background-color:#f0bc00" aria-label="Yellow accent"></button>
+                    <input id="foreground-secondary" type="color" value="#14866d" aria-label="Custom gradient accent">
+                  </div>
+                </div>
 
-              <p class="section-note">Preset SVG marks are bundled locally so export does not depend on remote image loading.</p>
+                <div class="palette-panel">
+                  <span class="compact-label" id="paper-color-heading">Paper</span>
+                  <div class="color-row" role="group" aria-labelledby="paper-color-heading">
+                    <button type="button" data-color-target="background" data-color="#ffffff" style="background-color:#ffffff" aria-label="White paper"></button>
+                    <button type="button" data-color-target="background" data-color="#f8fafc" style="background-color:#f8fafc" aria-label="Soft paper"></button>
+                    <button type="button" data-color-target="background" data-color="#0f172a" style="background-color:#0f172a" aria-label="Dark paper"></button>
+                    <input id="background" type="color" value="#ffffff" aria-label="Custom paper color">
+                  </div>
+                </div>
+              </div>
             </section>
           </form>
         </aside>
@@ -210,26 +261,19 @@
             <div class="canvas-frame qr-stage" id="qr-stage" aria-live="polite"></div>
             <div class="canvas-metadata">
               <span id="scan-status-text">Active and scannable</span>
-              <span>Client-side SVG and PNG export</span>
+              <span>Background - modules - logo</span>
             </div>
           </section>
 
           <div class="export-bar">
             <div class="export-info">
-              <strong>Publish QR Code</strong>
+              <strong>Publish QR Assets</strong>
               <p class="status-line" id="status-line" role="status"></p>
             </div>
 
             <div class="export-controls" aria-label="Export settings">
-              <label class="field">
-                <span>Format</span>
-                <select id="download-format">
-                  <option value="png">PNG</option>
-                  <option value="svg">SVG</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Size</span>
+              <label class="field-row">
+                <span>Export size</span>
                 <select id="export-size">
                   <option value="300">300</option>
                   <option value="600" selected>600</option>
@@ -239,8 +283,9 @@
             </div>
 
             <div class="actions">
-              <button class="button button--primary" id="download-qr" type="button">Download QR</button>
-              <button class="button" id="copy-svg" type="button">Copy SVG</button>
+              <button class="secondary-action" id="copy-svg" type="button">Copy SVG</button>
+              <button class="secondary-action" id="download-svg" type="button">Download SVG</button>
+              <button class="primary-action" id="download-png" type="button">Download PNG</button>
             </div>
           </div>
         </main>

@@ -5,7 +5,7 @@ import {
   normalizeDirectUrl,
   projectUsesLanguage
 } from "./wikimedia.js";
-import { getLogo, renderLogoPreview } from "./logos.js";
+import { CENTER_LOGO_IDS, getLogo, renderLogoPreview } from "./logos.js";
 
 const form = document.querySelector("#qr-form");
 const appShell = document.querySelector("#app-shell");
@@ -30,7 +30,14 @@ const foregroundInput = document.querySelector("#foreground");
 const foregroundSecondaryInput = document.querySelector("#foreground-secondary");
 const backgroundInput = document.querySelector("#background");
 const accentColorField = document.querySelector("#accent-color-field");
-const logoPicker = document.querySelector("#logo-picker");
+const presetButtons = document.querySelectorAll("[data-preset]");
+const colorButtons = document.querySelectorAll("[data-color-target]");
+const logoSelect = document.querySelector("#logo-select");
+const selectedLogoGlyph = document.querySelector("#selected-logo-glyph");
+const logoMeta = document.querySelector("#logo-meta");
+const logoDetailId = document.querySelector("#logo-detail-id");
+const logoDetailSource = document.querySelector("#logo-detail-source");
+const logoDetailMode = document.querySelector("#logo-detail-mode");
 const logoSizeField = document.querySelector("#logo-size-field");
 const logoSizeInput = document.querySelector("#logo-size");
 const qrStage = document.querySelector("#qr-stage");
@@ -38,10 +45,61 @@ const targetUrlOutput = document.querySelector("#target-url");
 const qrMetaOutput = document.querySelector("#qr-meta");
 const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
-const downloadFormatInput = document.querySelector("#download-format");
 const exportSizeInput = document.querySelector("#export-size");
-const downloadQrButton = document.querySelector("#download-qr");
 const copySvgButton = document.querySelector("#copy-svg");
+const downloadSvgButton = document.querySelector("#download-svg");
+const downloadPngButton = document.querySelector("#download-png");
+
+const QR_PRESETS = {
+  article: {
+    mode: "build",
+    project: "wikipedia",
+    language: "en",
+    title: "Wikimedia Foundation",
+    logo: "wikipedia",
+    errorCorrection: "high",
+    moduleStyle: "square",
+    colorMode: "solid",
+    foreground: "#202122",
+    foregroundSecondary: "#14866d",
+    background: "#ffffff"
+  },
+  commons: {
+    mode: "build",
+    project: "commons",
+    title: "File:Example image.svg",
+    logo: "commons",
+    errorCorrection: "high",
+    moduleStyle: "rounded",
+    colorMode: "solid",
+    foreground: "#006bb6",
+    foregroundSecondary: "#14866d",
+    background: "#ffffff"
+  },
+  wikidata: {
+    mode: "build",
+    project: "wikidata",
+    title: "Q42",
+    logo: "wikidata",
+    errorCorrection: "high",
+    moduleStyle: "square",
+    colorMode: "solid",
+    foreground: "#202122",
+    foregroundSecondary: "#049dff",
+    background: "#ffffff"
+  },
+  campaign: {
+    mode: "direct",
+    directUrl: "https://meta.wikimedia.org/wiki/Wikimania",
+    logo: "wikimedia",
+    errorCorrection: "high",
+    moduleStyle: "rounded",
+    colorMode: "gradient",
+    foreground: "#006bb6",
+    foregroundSecondary: "#14866d",
+    background: "#ffffff"
+  }
+};
 
 let mode = "build";
 let selectedLogo = "none";
@@ -50,7 +108,6 @@ let currentUrl = "";
 let currentPngSize = 512;
 
 for (const element of [
-  form,
   projectInput,
   languageInput,
   titleInput,
@@ -69,15 +126,23 @@ for (const element of [
   element.addEventListener("change", render);
 }
 
+form.addEventListener("submit", (event) => event.preventDefault());
 buildMode.addEventListener("click", () => setMode("build"));
 directMode.addEventListener("click", () => setMode("direct"));
-downloadQrButton.addEventListener("click", downloadSelectedFormat);
+logoSelect.addEventListener("change", () => {
+  selectedLogo = logoSelect.value;
+  render();
+});
 copySvgButton.addEventListener("click", copySvg);
+downloadSvgButton.addEventListener("click", downloadSvg);
+downloadPngButton.addEventListener("click", () => downloadPng(Number(exportSizeInput.value)));
 themeDarkButton.addEventListener("click", () => setTheme("dark"));
 themeLightButton.addEventListener("click", () => setTheme("light"));
 
 brandMark.innerHTML = renderLogoPreview("wikimedia");
-initializeLogoPicker();
+initializeLogoSelect();
+initializeColorRows();
+initializePresets();
 setTheme(localStorage.getItem("wikimedia-qr-theme") || "dark");
 setMode("build");
 
@@ -112,6 +177,8 @@ function render() {
     languageField.classList.toggle("is-hidden", !projectUsesLanguage(projectInput.value));
     logoSizeField.classList.toggle("is-hidden", selectedLogo === "none");
     accentColorField.classList.toggle("is-hidden", colorModeInput.value !== "gradient");
+    updateLogoDetails();
+    syncColorRows();
 
     const url = mode === "build"
       ? buildWikimediaUrl({
@@ -172,22 +239,83 @@ function render() {
   }
 }
 
-function initializeLogoPicker() {
-  for (const button of logoPicker.querySelectorAll("[data-logo]")) {
-    const logoId = button.dataset.logo;
-    const mark = button.querySelector(".logo-option__mark");
-    if (mark) {
-      mark.innerHTML = renderLogoPreview(logoId);
-    }
+function initializeLogoSelect() {
+  logoSelect.innerHTML = "";
+
+  for (const logoId of CENTER_LOGO_IDS) {
+    const logo = getLogo(logoId);
+    const option = document.createElement("option");
+    option.value = logoId;
+    option.textContent = logo.shortLabel || logo.label;
+    logoSelect.append(option);
+  }
+
+  logoSelect.value = selectedLogo;
+  updateLogoDetails();
+}
+
+function initializeColorRows() {
+  for (const button of colorButtons) {
     button.addEventListener("click", () => {
-      selectedLogo = logoId;
-      for (const option of logoPicker.querySelectorAll("[data-logo]")) {
-        const active = option.dataset.logo === selectedLogo;
-        option.classList.toggle("is-active", active);
-        option.setAttribute("aria-pressed", String(active));
+      const target = document.querySelector(`#${button.dataset.colorTarget}`);
+      if (!target) {
+        return;
       }
+      target.value = button.dataset.color;
       render();
     });
+  }
+}
+
+function initializePresets() {
+  for (const button of presetButtons) {
+    button.addEventListener("click", () => applyPreset(button.dataset.preset));
+  }
+}
+
+function applyPreset(presetId) {
+  const preset = QR_PRESETS[presetId];
+  if (!preset) {
+    return;
+  }
+
+  projectInput.value = preset.project ?? projectInput.value;
+  languageInput.value = preset.language ?? languageInput.value;
+  titleInput.value = preset.title ?? titleInput.value;
+  directUrlInput.value = preset.directUrl ?? directUrlInput.value;
+  errorCorrectionInput.value = preset.errorCorrection ?? errorCorrectionInput.value;
+  moduleStyleInput.value = preset.moduleStyle ?? moduleStyleInput.value;
+  colorModeInput.value = preset.colorMode ?? colorModeInput.value;
+  foregroundInput.value = preset.foreground ?? foregroundInput.value;
+  foregroundSecondaryInput.value = preset.foregroundSecondary ?? foregroundSecondaryInput.value;
+  backgroundInput.value = preset.background ?? backgroundInput.value;
+  selectedLogo = preset.logo ?? selectedLogo;
+  logoSelect.value = selectedLogo;
+
+  for (const button of presetButtons) {
+    const active = button.dataset.preset === presetId;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+
+  setMode(preset.mode ?? "build");
+}
+
+function updateLogoDetails() {
+  const logo = getLogo(selectedLogo);
+  selectedLogoGlyph.innerHTML = renderLogoPreview(selectedLogo);
+  selectedLogoGlyph.classList.toggle("is-empty", selectedLogo === "none");
+  logoMeta.textContent = `ID: ${selectedLogo}`;
+  logoDetailId.textContent = selectedLogo;
+  logoDetailSource.textContent = logo.sourceTitle || "No logo selected";
+  logoDetailMode.textContent = selectedLogo === "none" ? "Standard EC" : "High EC forced";
+}
+
+function syncColorRows() {
+  for (const button of colorButtons) {
+    const target = document.querySelector(`#${button.dataset.colorTarget}`);
+    const active = target && target.value.toLowerCase() === button.dataset.color.toLowerCase();
+    button.classList.toggle("active", Boolean(active));
   }
 }
 
@@ -197,16 +325,9 @@ function setStatus(message, tone) {
 }
 
 function setActionState(disabled) {
-  downloadQrButton.disabled = disabled;
   copySvgButton.disabled = disabled;
-}
-
-function downloadSelectedFormat() {
-  if (downloadFormatInput.value === "svg") {
-    downloadSvg();
-    return;
-  }
-  downloadPng(Number(exportSizeInput.value));
+  downloadSvgButton.disabled = disabled;
+  downloadPngButton.disabled = disabled;
 }
 
 function downloadSvg() {
