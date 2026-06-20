@@ -1,9 +1,18 @@
 import { createQrCode } from "./qr.js";
+import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
+import {
+  getLogoLibraryEntry,
+  hasLogoLibraryEntry,
+  LOGO_LIBRARY_COUNTS,
+  LOGO_LIBRARY_ENTRIES,
+  LOGO_LIBRARY_FILTERS,
+  normalizeLogoSearchText
+} from "./logoLibrary.js";
 import {
   buildWikimediaUrl,
   normalizeDirectUrl
 } from "./wikimedia.js";
-import { CENTER_LOGO_IDS, getLogo, renderLogoPreview } from "./logos.js";
+import { CENTER_LOGO_IDS, getLogo, renderLogoMarkup, renderLogoPreview } from "./logos.js";
 
 const form = document.querySelector("#qr-form");
 const appShell = document.querySelector("#app-shell");
@@ -53,6 +62,13 @@ const logoDetailSource = document.querySelector("#logo-detail-source");
 const logoDetailMode = document.querySelector("#logo-detail-mode");
 const logoSizeField = document.querySelector("#logo-size-field");
 const logoSizeInput = document.querySelector("#logo-size");
+const openLogoLibraryButton = document.querySelector("#open-logo-library");
+const logoLibraryDialog = document.querySelector("#logo-library-dialog");
+const closeLogoLibraryButton = document.querySelector("#close-logo-library");
+const logoLibrarySearchInput = document.querySelector("#logo-library-search");
+const logoLibraryFilters = document.querySelector("#logo-library-filters");
+const logoLibraryCount = document.querySelector("#logo-library-count");
+const logoLibraryResults = document.querySelector("#logo-library-results");
 const qrStage = document.querySelector("#qr-stage");
 const targetUrlOutput = document.querySelector("#target-url");
 const qrMetaOutput = document.querySelector("#qr-meta");
@@ -66,6 +82,8 @@ const downloadPngButton = document.querySelector("#download-png");
 const STORAGE_VERSION = 1;
 const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
 const TRASH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHECK_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const REFRESH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 0 1-15.3 6.4M3 12A9 9 0 0 1 18.3 5.6M18 2v4h-4M6 22v-4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const QR_PRESETS = {
   article: {
@@ -110,7 +128,7 @@ const QR_PRESETS = {
   campaign: {
     contentType: "url",
     url: "https://meta.wikimedia.org/wiki/Wikimania",
-    logo: "wikimedia",
+    logo: "wikimania",
     errorCorrection: "high",
     moduleStyle: "rounded",
     cornerSquareStyle: "rounded",
@@ -124,6 +142,10 @@ const QR_PRESETS = {
 
 let contentType = "url";
 let selectedLogo = "none";
+let libraryFilter = "all";
+let libraryLogosById = new Map();
+let libraryLoadingById = {};
+let libraryErrorById = {};
 let currentSvg = "";
 let currentUrl = "";
 let currentPngSize = 512;
@@ -171,8 +193,17 @@ refreshQrButton.addEventListener("click", () => {
   setStatus("QR preview refreshed.", "success");
 });
 logoSelect.addEventListener("change", () => {
-  selectedLogo = logoSelect.value;
-  render();
+  selectLogo(logoSelect.value);
+});
+openLogoLibraryButton.addEventListener("click", openLogoLibrary);
+closeLogoLibraryButton.addEventListener("click", closeLogoLibrary);
+logoLibraryDialog.addEventListener("mousedown", (event) => {
+  if (event.target === logoLibraryDialog) {
+    closeLogoLibrary();
+  }
+});
+logoLibrarySearchInput.addEventListener("input", () => {
+  renderLogoLibrary();
 });
 copySvgButton.addEventListener("click", copySvg);
 downloadSvgButton.addEventListener("click", downloadSvg);
@@ -187,10 +218,12 @@ document.addEventListener("mousedown", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     setDesignsMenuOpen(false);
+    closeLogoLibrary();
   }
 });
 
 initializeLogoSelect();
+initializeLogoLibraryFilters();
 initializeColorRows();
 initializePresets();
 renderCustomDesigns();
@@ -227,6 +260,7 @@ function setContentType(nextType) {
 
 function render() {
   try {
+    const activeLogo = getActiveLogo(selectedLogo);
     logoSizeField.classList.toggle("is-hidden", selectedLogo === "none");
     accentColorField.classList.toggle("is-hidden", colorModeInput.value !== "gradient");
     updateLogoDetails();
@@ -254,7 +288,7 @@ function render() {
       cornerSquareStyle: cornerSquareStyleInput.value,
       cornerDotStyle: cornerDotStyleInput.value,
       colorMode: colorModeInput.value,
-      logo: getLogo(selectedLogo),
+      logo: activeLogo,
       logoSize: Number(logoSizeInput.value) / 100
     });
 
@@ -387,15 +421,219 @@ function initializeLogoSelect() {
   logoSelect.innerHTML = "";
 
   for (const logoId of CENTER_LOGO_IDS) {
-    const logo = getLogo(logoId);
-    const option = document.createElement("option");
-    option.value = logoId;
-    option.textContent = logo.shortLabel || logo.label;
-    logoSelect.append(option);
+    ensureLogoOption(logoId);
   }
 
   logoSelect.value = selectedLogo;
   updateLogoDetails();
+}
+
+function ensureLogoOption(logoId) {
+  if (!logoId || [...logoSelect.options].some((option) => option.value === logoId)) {
+    return;
+  }
+
+  const entry = getLogoLibraryEntry(logoId);
+  const logo = libraryLogosById.get(logoId) || getLogo(logoId);
+  const option = document.createElement("option");
+  option.value = logoId;
+  option.textContent = logo.shortLabel || logo.label || entry?.name || logoId;
+  logoSelect.append(option);
+}
+
+function getActiveLogo(logoId) {
+  return libraryLogosById.get(logoId) || getLogo(logoId);
+}
+
+function initializeLogoLibraryFilters() {
+  logoLibraryFilters.innerHTML = "";
+
+  for (const filter of LOGO_LIBRARY_FILTERS) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.logoFilter = filter.id;
+    button.innerHTML = `<span>${filter.label}</span><b>${LOGO_LIBRARY_COUNTS[filter.id] || 0}</b>`;
+    button.addEventListener("click", () => {
+      libraryFilter = filter.id;
+      renderLogoLibrary();
+    });
+    logoLibraryFilters.append(button);
+  }
+
+  renderLogoLibrary();
+}
+
+function openLogoLibrary() {
+  logoLibraryDialog.classList.remove("is-hidden");
+  renderLogoLibrary();
+  window.setTimeout(() => logoLibrarySearchInput.focus(), 0);
+}
+
+function closeLogoLibrary() {
+  logoLibraryDialog.classList.add("is-hidden");
+}
+
+function renderLogoLibrary() {
+  const query = normalizeLogoSearchText(logoLibrarySearchInput.value);
+  const tokens = query.split(/\s+/).filter(Boolean);
+  const entries = LOGO_LIBRARY_ENTRIES.filter((entry) => {
+    if (libraryFilter !== "all" && entry.kind !== libraryFilter) {
+      return false;
+    }
+    if (tokens.length === 0) {
+      return true;
+    }
+
+    const searchText = normalizeLogoSearchText(`${entry.name} ${entry.code} ${entry.kindLabel} ${entry.commonsTitle}`);
+    return tokens.every((token) => searchText.includes(token));
+  });
+
+  for (const button of logoLibraryFilters.querySelectorAll("button")) {
+    const active = button.dataset.logoFilter === libraryFilter;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+
+  logoLibraryCount.textContent = `${entries.length} logo${entries.length === 1 ? "" : "s"}`;
+  logoLibraryResults.innerHTML = "";
+
+  if (entries.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "library-empty";
+    empty.textContent = "No matching logos.";
+    logoLibraryResults.append(empty);
+    return;
+  }
+
+  for (const entry of entries) {
+    logoLibraryResults.append(renderLogoLibraryCard(entry));
+  }
+}
+
+function renderLogoLibraryCard(entry) {
+  const card = document.createElement("article");
+  const isActive = entry.id === selectedLogo;
+  const isLoading = Boolean(libraryLoadingById[entry.id]);
+  const error = libraryErrorById[entry.id];
+  card.className = `library-card${isActive ? " library-card-active" : ""}`;
+
+  const glyph = document.createElement("span");
+  const logo = entry.local ? getLogo(entry.id) : libraryLogosById.get(entry.id);
+  glyph.className = logo?.body ? "library-logo-glyph" : "library-logo-placeholder";
+  glyph.setAttribute("aria-hidden", "true");
+  glyph.innerHTML = logo?.body
+    ? renderLogoMarkup(logo)
+    : String(entry.code || entry.name || "?").slice(0, 3);
+
+  const main = document.createElement("div");
+  main.className = "library-card-main";
+  const title = document.createElement("div");
+  title.className = "library-card-title";
+  const strong = document.createElement("strong");
+  strong.title = entry.name;
+  strong.textContent = entry.name;
+  title.append(strong);
+  if (entry.code) {
+    const code = document.createElement("span");
+    code.textContent = entry.code;
+    title.append(code);
+  }
+
+  const meta = document.createElement("div");
+  meta.className = "library-card-meta";
+  const kind = document.createElement("span");
+  kind.textContent = entry.kindLabel;
+  meta.append(kind);
+  if (entry.metaPageUrl) {
+    const link = document.createElement("a");
+    link.href = entry.metaPageUrl;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = entry.local ? "Commons" : "Meta";
+    meta.append(link);
+  }
+
+  main.append(title, meta);
+  if (error) {
+    const message = document.createElement("p");
+    message.className = "library-card-error";
+    message.textContent = error;
+    main.append(message);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "library-card-actions";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.disabled = isActive || isLoading;
+  button.innerHTML = `${isLoading ? REFRESH_ICON : CHECK_ICON}<span>${isActive ? "Center" : "Set center"}</span>`;
+  button.addEventListener("click", () => setLibraryLogoAsCenter(entry));
+  actions.append(button);
+
+  card.append(glyph, main, actions);
+  return card;
+}
+
+async function setLibraryLogoAsCenter(entry) {
+  if (entry.local) {
+    selectLogo(entry.id);
+    renderLogoLibrary();
+    return;
+  }
+
+  let logo = libraryLogosById.get(entry.id);
+  if (!logo) {
+    logo = await loadLibraryLogo(entry);
+  }
+  if (!logo) {
+    return;
+  }
+
+  selectLogo(entry.id);
+  renderLogoLibrary();
+}
+
+async function loadLibraryLogo(entry) {
+  libraryLoadingById = { ...libraryLoadingById, [entry.id]: true };
+  libraryErrorById = removeObjectKey(libraryErrorById, entry.id);
+  renderLogoLibrary();
+
+  try {
+    const logo = await fetchCatalogCommonsLogo(entry);
+    libraryLogosById = new Map(libraryLogosById).set(logo.id, logo);
+    ensureLogoOption(logo.id);
+    return logo;
+  } catch (error) {
+    libraryErrorById = {
+      ...libraryErrorById,
+      [entry.id]: error.message || "Could not load this logo."
+    };
+    return null;
+  } finally {
+    libraryLoadingById = removeObjectKey(libraryLoadingById, entry.id);
+    renderLogoLibrary();
+  }
+}
+
+function selectLogo(logoId) {
+  selectedLogo = normalizeLogoId(logoId, selectedLogo);
+  ensureLogoOption(selectedLogo);
+  logoSelect.value = selectedLogo;
+  hydrateLibraryLogo(selectedLogo);
+  render();
+}
+
+function hydrateLibraryLogo(logoId) {
+  const entry = getLogoLibraryEntry(logoId);
+  if (!entry || entry.local || libraryLogosById.has(logoId) || libraryLoadingById[logoId]) {
+    return;
+  }
+
+  loadLibraryLogo(entry).then((logo) => {
+    if (logo && selectedLogo === logo.id) {
+      render();
+    }
+  });
 }
 
 function initializeColorRows() {
@@ -433,6 +671,7 @@ function applyPreset(presetId) {
   foregroundSecondaryInput.value = preset.foregroundSecondary ?? foregroundSecondaryInput.value;
   backgroundInput.value = preset.background ?? backgroundInput.value;
   selectedLogo = preset.logo ?? selectedLogo;
+  ensureLogoOption(selectedLogo);
   logoSelect.value = selectedLogo;
 
   for (const button of presetButtons) {
@@ -445,12 +684,15 @@ function applyPreset(presetId) {
 }
 
 function updateLogoDetails() {
-  const logo = getLogo(selectedLogo);
-  selectedLogoGlyph.innerHTML = renderLogoPreview(selectedLogo);
+  const entry = getLogoLibraryEntry(selectedLogo);
+  const logo = getActiveLogo(selectedLogo);
+  selectedLogoGlyph.innerHTML = libraryLogosById.has(selectedLogo)
+    ? renderLogoMarkup(logo)
+    : renderLogoPreview(selectedLogo);
   selectedLogoGlyph.classList.toggle("is-empty", selectedLogo === "none");
   logoMeta.textContent = `ID: ${selectedLogo}`;
   logoDetailId.textContent = selectedLogo;
-  logoDetailSource.textContent = logo.sourceTitle || "No logo selected";
+  logoDetailSource.textContent = logo.sourceTitle || entry?.commonsTitle || "No logo selected";
   logoDetailMode.textContent = selectedLogo === "none" ? "Standard EC" : "High EC forced";
 }
 
@@ -611,7 +853,9 @@ function applyDesignConfig(config) {
   foregroundSecondaryInput.value = normalized.foregroundSecondary;
   backgroundInput.value = normalized.background;
   selectedLogo = normalized.logo;
+  ensureLogoOption(selectedLogo);
   logoSelect.value = selectedLogo;
+  hydrateLibraryLogo(selectedLogo);
   logoSizeInput.value = normalized.logoSize;
   exportSizeInput.value = normalized.exportSize;
 
@@ -650,7 +894,7 @@ function normalizeDesignConfig(config) {
     foreground: colorValue(source.foreground, fallback.foreground),
     foregroundSecondary: colorValue(source.foregroundSecondary, fallback.foregroundSecondary),
     background: colorValue(source.background, fallback.background),
-    logo: CENTER_LOGO_IDS.includes(source.logo) ? source.logo : fallback.logo,
+    logo: normalizeLogoId(source.logo, fallback.logo),
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
     exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize)
   };
@@ -742,6 +986,14 @@ function optionValue(select, value, fallback) {
   return [...select.options].some((option) => option.value === candidate) ? candidate : fallback;
 }
 
+function normalizeLogoId(value, fallback = "none") {
+  const logoId = typeof value === "string" ? value : "";
+  if (CENTER_LOGO_IDS.includes(logoId) || hasLogoLibraryEntry(logoId) || libraryLogosById.has(logoId)) {
+    return logoId;
+  }
+  return fallback;
+}
+
 function rangeValue(input, value, fallback) {
   const number = Number(value);
   if (!Number.isFinite(number)) {
@@ -760,6 +1012,11 @@ function colorValue(value, fallback) {
 
 function stringValue(value, fallback) {
   return typeof value === "string" ? value : fallback;
+}
+
+function removeObjectKey(object, key) {
+  const { [key]: removed, ...rest } = object;
+  return rest;
 }
 
 function setStatus(message, tone) {

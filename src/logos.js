@@ -24,6 +24,20 @@ export const WIKIMEDIA_LOGOS = {
       <circle cy="-10" r="5" fill="#000000"/>
     `
   },
+  wikimania: {
+    label: "Wikimania",
+    shortLabel: "Wikimania",
+    sourceTitle: "File:Wikimania logo.svg",
+    color: "#006bb6",
+    viewBox: "0 0 100 100",
+    body: `
+      <circle cx="50" cy="50" r="43" fill="#ffffff" stroke="#006bb6" stroke-width="7"/>
+      <path d="M22,35 L34,76 L50,42 L66,76 L78,35" fill="none" stroke="#202122" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="50" cy="23" r="8" fill="#d33"/>
+      <circle cx="27" cy="30" r="5" fill="#14866d"/>
+      <circle cx="73" cy="30" r="5" fill="#006bb6"/>
+    `
+  },
   wikipedia: {
     label: "Wikipedia",
     shortLabel: "Wikipedia",
@@ -104,6 +118,7 @@ export const WIKIMEDIA_LOGOS = {
 export const CENTER_LOGO_IDS = [
   "none",
   "wikimedia",
+  "wikimania",
   "wikipedia",
   "commons",
   "wikidata",
@@ -122,5 +137,21 @@ export function renderLogoPreview(id) {
     return "";
   }
 
-  return `<svg viewBox="${logo.viewBox}" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">${logo.body}</svg>`;
+  return renderLogoMarkup(logo);
+}
+
+export function renderLogoMarkup(logo) {
+  if (!logo?.body || !logo.viewBox) {
+    return "";
+  }
+
+  return `<svg viewBox="${escapeAttribute(logo.viewBox)}" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">${logo.body}</svg>`;
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

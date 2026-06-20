@@ -112,7 +112,7 @@
                 </button>
                 <button class="preset-button" type="button" data-preset="campaign">
                   <strong>Campaign Link</strong>
-                  <span>Event page / Wikimedia center</span>
+                  <span>Event page / Wikimania center</span>
                 </button>
               </div>
             </section>
@@ -236,6 +236,13 @@
                     <option value="none">None</option>
                   </select>
                 </label>
+
+                <button class="library-inline-button" id="open-logo-library" type="button">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 5h6v14H4zM14 5h6v14h-6zM10 8h4M10 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Browse logo library</span>
+                </button>
 
                 <dl class="central-logo-details" id="central-logo-details">
                   <div>
@@ -417,6 +424,42 @@
             </div>
           </div>
         </main>
+      </div>
+
+      <div class="library-dialog-backdrop is-hidden" id="logo-library-dialog" role="presentation">
+        <section class="library-dialog" role="dialog" aria-modal="true" aria-labelledby="logo-library-title">
+          <header class="library-dialog-header">
+            <div>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 5h6v14H4zM14 5h6v14h-6zM10 8h4M10 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+              <h2 id="logo-library-title">Logo library</h2>
+            </div>
+            <button class="library-close-button" id="close-logo-library" type="button" aria-label="Close logo library">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </header>
+
+          <div class="library-toolbar">
+            <label class="library-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="m21 21-4.3-4.3M18 11a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <input id="logo-library-search" type="search" placeholder="Search by name, code, or project" aria-label="Search logo library">
+            </label>
+
+            <div class="library-filter-row" id="logo-library-filters" role="group" aria-label="Logo library filters"></div>
+          </div>
+
+          <div class="library-results-summary" role="status" aria-live="polite">
+            <span id="logo-library-count">0 logos</span>
+            <span>SVG logos loaded from Commons on demand</span>
+          </div>
+
+          <div class="library-results control-scrollbar" id="logo-library-results"></div>
+        </section>
       </div>
 
       <footer class="app-footer">

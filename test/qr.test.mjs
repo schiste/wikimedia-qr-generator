@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { WIKIMEDIA_LOGOS } from "../src/logos.js";
+import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
+import { LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
 import { createQrCode } from "../src/qr.js";
 import { buildWikimediaUrl, normalizeDirectUrl } from "../src/wikimedia.js";
 
@@ -70,6 +71,14 @@ test("renders styled QR SVGs with Wikimedia logos", () => {
   assert.match(svg, /linearGradient id="qr-dots-gradient"/);
   assert.match(svg, /Wikimedia Commons/);
   assert.match(svg, /stroke="#006699"/);
+});
+
+test("exposes Wikimania in the central logo library", () => {
+  const libraryEntry = LOGO_LIBRARY_ENTRIES.find((entry) => entry.id === "wikimania");
+
+  assert.ok(CENTER_LOGO_IDS.includes("wikimania"));
+  assert.equal(WIKIMEDIA_LOGOS.wikimania.sourceTitle, "File:Wikimania logo.svg");
+  assert.equal(libraryEntry?.name, "Wikimania");
 });
 
 test("renders custom finder corner shapes", () => {

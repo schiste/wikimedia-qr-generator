@@ -9,7 +9,7 @@ The QR code is generated locally in the browser. The service has no runtime depe
 - Create QR codes for URL, text, email, SMS, and WiFi payloads.
 - Start from ready presets for articles, Commons files, Wikidata items, and campaign links.
 - Save, reopen, import, and export custom QR designs from the header toolbar.
-- Add an optional center mark from Wikimedia-only logo presets.
+- Add an optional center mark from Wikimedia-only logo presets or the shared logo library.
 - Export QR codes as SVG or PNG with a separate preview size and export resolution.
 - Adjust error correction, module shape, quiet zone, solid or gradient color, size, and colors.
 - Uses the same compact app shell, control density, and Wikimedia logo approach as the sibling `logo-gen` tool.
@@ -46,11 +46,14 @@ This is a community tool and is not an official Wikimedia Foundation service.
 Wikimedia logo presets are local SVG copies of Wikimedia movement marks sourced from Wikimedia Commons and shared with the sibling `logo-gen` workflow:
 
 - `Wikimedia-logo.svg`
+- `Wikimania logo.svg`
 - `Wikipedia-logo-v2.svg`
 - `Commons-logo.svg`
 - `Wikidata-logo.svg`
 - `Wikisource-logo.svg`
 - `Wiktionary-logo-v2.svg`
 - `MediaWiki-2020-icon.svg`
+
+The logo library also exposes the generated SVG-only Wikimedia affiliate catalog from `logo-gen` and loads those Commons SVGs on demand.
 
 Use of Wikimedia marks remains subject to Wikimedia trademark policy.
