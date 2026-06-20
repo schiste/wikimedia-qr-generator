@@ -9,7 +9,7 @@ Deploy the static Wikimedia QR Generator files to Toolforge.
 
 Environment:
   TOOLFORGE_LOGIN      SSH login name. Defaults to schiste.
-  TOOLFORGE_TOOL       Tool account name. Defaults to schiste.
+  TOOLFORGE_TOOL       Tool account name. Defaults to wikimedia-qr-generator.
   TOOLFORGE_HOST       SSH host. Defaults to login.toolforge.org.
   TOOLFORGE_SSH_KEY    Optional local private key path.
   TOOLFORGE_TARGET     webservice, static, or both. Defaults to webservice.
@@ -52,7 +52,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 toolforge_login="${TOOLFORGE_LOGIN:-schiste}"
-toolforge_tool="${TOOLFORGE_TOOL:-schiste}"
+toolforge_tool="${TOOLFORGE_TOOL:-wikimedia-qr-generator}"
 toolforge_host="${TOOLFORGE_HOST:-login.toolforge.org}"
 toolforge_target="${TOOLFORGE_TARGET:-webservice}"
 toolforge_ssh_key="${TOOLFORGE_SSH_KEY:-}"
@@ -90,9 +90,9 @@ else
   remote="${toolforge_login}@${toolforge_host}"
 fi
 
-ssh_options=()
+ssh_options=(-o ConnectTimeout=10)
 if [[ -n "$toolforge_ssh_key" ]]; then
-  ssh_options=(-i "$toolforge_ssh_key" -o IdentitiesOnly=yes)
+  ssh_options=(-i "$toolforge_ssh_key" -o IdentitiesOnly=yes "${ssh_options[@]}")
 fi
 
 ssh_transport="ssh"
@@ -101,18 +101,22 @@ for option in "${ssh_options[@]}"; do
   ssh_transport+=" ${quoted_option}"
 done
 
-rsync_options=(-az --delete --chmod=D755,F644)
+rsync_options=(-az --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r)
 if [[ "$mode" == "dry-run" ]]; then
   rsync_options+=(--dry-run --itemize-changes)
 fi
+rsync_remote_path="become ${toolforge_tool} rsync"
 
-site_files=(
-  index.html
-  styles.css
-  favicon.svg
-  robots.txt
-  healthz
-  src/
+site_filter_options=(
+  --delete
+  --delete-excluded
+  --include=/index.html
+  --include=/styles.css
+  --include=/favicon.svg
+  --include=/robots.txt
+  --include=/healthz
+  --include=/src/***
+  --exclude=*
 )
 
 remote_project="/data/project/${toolforge_tool}"
@@ -123,8 +127,12 @@ run_ssh() {
   ssh "${ssh_options[@]}" "$remote" "$@"
 }
 
+run_ssh_as_tool() {
+  run_ssh become "$toolforge_tool" "sh -c '$1'"
+}
+
 remote_dir_exists() {
-  run_ssh "test -d '$1'"
+  run_ssh_as_tool "test -d '$1'"
 }
 
 ensure_remote_dir() {
@@ -133,12 +141,11 @@ ensure_remote_dir() {
     echo "Dry run: would ensure ${remote}:${remote_dir}/ exists"
     return
   fi
-  run_ssh "mkdir -p '${remote_dir}'"
+  run_ssh_as_tool "mkdir -p '${remote_dir}'"
 }
 
-run_rsync() {
+run_site_rsync() {
   local destination="$1"
-  shift
 
   if [[ "$mode" == "dry-run" ]]; then
     if remote_dir_exists "$destination"; then
@@ -154,20 +161,27 @@ run_rsync() {
     fi
   fi
 
-  rsync "${rsync_options[@]}" -e "$ssh_transport" "$@" "${remote}:${destination}/"
+  rsync "${rsync_options[@]}" "${site_filter_options[@]}" --rsync-path="$rsync_remote_path" -e "$ssh_transport" ./ "${remote}:${destination}/"
+}
+
+run_file_rsync() {
+  local destination="$1"
+  shift
+
+  rsync "${rsync_options[@]}" --rsync-path="$rsync_remote_path" -e "$ssh_transport" "$@" "${remote}:${destination}/"
 }
 
 sync_site_to() {
   local remote_dir="$1"
   echo "Syncing site files to ${remote}:${remote_dir}/ (${mode})"
   ensure_remote_dir "$remote_dir"
-  run_rsync "$remote_dir" "${site_files[@]}"
+  run_site_rsync "$remote_dir"
 }
 
 sync_service_template() {
   echo "Syncing Toolforge service.template to ${remote}:${remote_project}/service.template (${mode})"
   ensure_remote_dir "$remote_project"
-  run_rsync "$remote_project" toolforge/service.template
+  run_file_rsync "$remote_project" toolforge/service.template
 }
 
 case "$toolforge_target" in
@@ -190,7 +204,7 @@ if [[ "$restart" -eq 1 ]]; then
     echo "Dry run: would restart webservice for tool ${toolforge_tool}."
   else
     echo "Restarting Toolforge webservice for ${toolforge_tool}."
-    run_ssh "become '${toolforge_tool}' toolforge webservice restart || become '${toolforge_tool}' toolforge webservice start"
+    run_ssh become "$toolforge_tool" "toolforge webservice restart || toolforge webservice start"
   fi
 fi
 

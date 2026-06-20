@@ -35,7 +35,7 @@ Intended GitHub repository: `schiste/wikimedia-qr-generator`.
 
 ## Deploying On Toolforge
 
-This repo is prepared for the `schiste` Toolforge tool account. The default deploy syncs static files to `/data/project/schiste/public_html` and installs `toolforge/service.template` for `https://schiste.toolforge.org/`.
+This repo is prepared for the `wikimedia-qr-generator` Toolforge tool account maintained by `schiste`. The default deploy syncs static files to `/data/project/wikimedia-qr-generator/public_html` and installs `toolforge/service.template` for `https://wikimedia-qr-generator.toolforge.org/`.
 
 Dry-run first:
 

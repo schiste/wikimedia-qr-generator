@@ -4,10 +4,10 @@ This app is static: the browser generates QR codes locally, with no server-side 
 
 ## Targets
 
-- Webservice target: `https://schiste.toolforge.org/`
-- Static target: `https://tools-static.wmflabs.org/schiste/`
+- Webservice target: `https://wikimedia-qr-generator.toolforge.org/`
+- Static target: `https://tools-static.wmflabs.org/wikimedia-qr-generator/`
 
-The default deploy path uses the webservice target. It syncs the app into `/data/project/schiste/public_html` and installs `toolforge/service.template` as `/data/project/schiste/service.template`.
+The default deploy path uses the webservice target. It syncs the app into `/data/project/wikimedia-qr-generator/public_html` and installs `toolforge/service.template` as `/data/project/wikimedia-qr-generator/service.template`.
 
 ## Deploy
 
@@ -47,7 +47,7 @@ If you deploy without `--restart`, start or restart the service from Toolforge:
 
 ```sh
 ssh -i ~/.ssh/toolforge schiste@login.toolforge.org
-become schiste
+become wikimedia-qr-generator
 toolforge webservice restart
 toolforge webservice status
 ```
