@@ -6,7 +6,7 @@ The QR code is generated locally in the browser. The service has no runtime depe
 
 ## Features
 
-- Create QR codes for URL, text, email, SMS, WhatsApp, and WiFi payloads.
+- Create QR codes for URL, text, email, SMS, and WiFi payloads.
 - Start from ready presets for articles, Commons files, Wikidata items, and campaign links.
 - Save, reopen, import, and export custom QR designs from the header toolbar.
 - Add an optional center mark from Wikimedia-only logo presets.

@@ -28,8 +28,6 @@ const emailSubjectInput = document.querySelector("#email-subject");
 const emailBodyInput = document.querySelector("#email-body");
 const smsNumberInput = document.querySelector("#sms-number");
 const smsMessageInput = document.querySelector("#sms-message");
-const whatsappNumberInput = document.querySelector("#whatsapp-number");
-const whatsappMessageInput = document.querySelector("#whatsapp-message");
 const wifiSsidInput = document.querySelector("#wifi-ssid");
 const wifiPasswordInput = document.querySelector("#wifi-password");
 const wifiEncryptionInput = document.querySelector("#wifi-encryption");
@@ -130,8 +128,6 @@ for (const element of [
   emailBodyInput,
   smsNumberInput,
   smsMessageInput,
-  whatsappNumberInput,
-  whatsappMessageInput,
   wifiSsidInput,
   wifiPasswordInput,
   wifiEncryptionInput,
@@ -284,8 +280,6 @@ function compileContentPayload() {
       return compileEmailPayload();
     case "sms":
       return compileSmsPayload();
-    case "whatsapp":
-      return compileWhatsAppPayload();
     case "wifi":
       return compileWifiPayload();
     default:
@@ -327,17 +321,6 @@ function compileSmsPayload() {
   return { payload, label: `SMS: ${number}` };
 }
 
-function compileWhatsAppPayload() {
-  const number = normalizePhoneNumber(whatsappNumberInput.value).replace(/^\+/, "");
-  const message = whatsappMessageInput.value.trim();
-  if (!number && !message) {
-    throw new Error("Enter a WhatsApp phone number or message.");
-  }
-
-  const payload = `https://wa.me/${number}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
-  return { payload, label: number ? `WhatsApp: ${number}` : "WhatsApp message" };
-}
-
 function compileWifiPayload() {
   const ssid = requiredString(wifiSsidInput.value, "Enter a WiFi network name.");
   const encryption = wifiEncryptionInput.value;
@@ -359,7 +342,7 @@ function compileWifiPayload() {
 }
 
 function normalizeContentType(value) {
-  return ["url", "text", "email", "sms", "whatsapp", "wifi"].includes(value) ? value : "url";
+  return ["url", "text", "email", "sms", "wifi"].includes(value) ? value : "url";
 }
 
 function normalizePhoneNumber(value) {
@@ -568,8 +551,6 @@ function getDesignConfig() {
     emailBody: emailBodyInput.value,
     smsNumber: smsNumberInput.value,
     smsMessage: smsMessageInput.value,
-    whatsappNumber: whatsappNumberInput.value,
-    whatsappMessage: whatsappMessageInput.value,
     wifiSsid: wifiSsidInput.value,
     wifiPassword: wifiPasswordInput.value,
     wifiEncryption: wifiEncryptionInput.value,
@@ -597,8 +578,6 @@ function applyDesignConfig(config) {
   emailBodyInput.value = normalized.emailBody;
   smsNumberInput.value = normalized.smsNumber;
   smsMessageInput.value = normalized.smsMessage;
-  whatsappNumberInput.value = normalized.whatsappNumber;
-  whatsappMessageInput.value = normalized.whatsappMessage;
   wifiSsidInput.value = normalized.wifiSsid;
   wifiPasswordInput.value = normalized.wifiPassword;
   wifiEncryptionInput.value = normalized.wifiEncryption;
@@ -637,8 +616,6 @@ function normalizeDesignConfig(config) {
     emailBody: stringValue(source.emailBody, fallback.emailBody),
     smsNumber: stringValue(source.smsNumber, fallback.smsNumber),
     smsMessage: stringValue(source.smsMessage, fallback.smsMessage),
-    whatsappNumber: stringValue(source.whatsappNumber, fallback.whatsappNumber),
-    whatsappMessage: stringValue(source.whatsappMessage, fallback.whatsappMessage),
     wifiSsid: stringValue(source.wifiSsid, fallback.wifiSsid),
     wifiPassword: stringValue(source.wifiPassword, fallback.wifiPassword),
     wifiEncryption: optionValue(wifiEncryptionInput, source.wifiEncryption, fallback.wifiEncryption),
