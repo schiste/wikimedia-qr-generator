@@ -8,6 +8,7 @@ The QR code is generated locally in the browser. The service has no runtime depe
 
 - Build canonical URLs for common Wikimedia projects.
 - Start from ready presets for articles, Commons files, Wikidata items, and campaign links.
+- Save, reopen, import, and export custom QR designs from the header toolbar.
 - Paste direct HTTPS links when needed.
 - Add an optional center mark from Wikimedia-only logo presets.
 - Export QR codes as SVG or PNG with a separate preview size and export resolution.
