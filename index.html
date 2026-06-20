@@ -112,7 +112,7 @@
                 </button>
                 <button class="preset-button" type="button" data-preset="campaign">
                   <strong>Campaign Link</strong>
-                  <span>Direct URL / Wikimedia center</span>
+                  <span>Event page / Wikimedia center</span>
                 </button>
               </div>
             </section>
@@ -123,56 +123,116 @@
                   <span class="status-dot status-dot-green" aria-hidden="true"></span>
                   <h2 id="content-heading">2. Content</h2>
                 </div>
-                <span class="section-meta">Target</span>
+                <span class="section-meta">Payload</span>
               </div>
 
-              <div class="mode-switch" role="tablist" aria-label="QR target mode">
-                <button class="mode-switch__button is-active" id="build-mode" type="button" role="tab" aria-selected="true">Build URL</button>
-                <button class="mode-switch__button" id="direct-mode" type="button" role="tab" aria-selected="false">Paste URL</button>
+              <div class="type-grid" role="group" aria-label="QR content type">
+                <button class="type-button is-active" type="button" data-content-type="url" aria-pressed="true">
+                  <strong>URL</strong>
+                  <span>Web link</span>
+                </button>
+                <button class="type-button" type="button" data-content-type="text" aria-pressed="false">
+                  <strong>Text</strong>
+                  <span>Plain text</span>
+                </button>
+                <button class="type-button" type="button" data-content-type="email" aria-pressed="false">
+                  <strong>Email</strong>
+                  <span>Mailto</span>
+                </button>
+                <button class="type-button" type="button" data-content-type="sms" aria-pressed="false">
+                  <strong>SMS</strong>
+                  <span>Message</span>
+                </button>
+                <button class="type-button" type="button" data-content-type="whatsapp" aria-pressed="false">
+                  <strong>WhatsApp</strong>
+                  <span>Chat link</span>
+                </button>
+                <button class="type-button" type="button" data-content-type="wifi" aria-pressed="false">
+                  <strong>WiFi</strong>
+                  <span>Network</span>
+                </button>
               </div>
 
-              <div class="field-group" id="builder-fields">
-                <label class="field">
-                  <span>Project</span>
-                  <select id="project">
-                    <option value="wikipedia">Wikipedia</option>
-                    <option value="commons">Wikimedia Commons</option>
-                    <option value="wikidata">Wikidata</option>
-                    <option value="wiktionary">Wiktionary</option>
-                    <option value="wikisource">Wikisource</option>
-                    <option value="meta">Meta-Wiki</option>
-                    <option value="mediawiki">MediaWiki</option>
-                  </select>
-                </label>
-
-                <label class="field" id="language-field">
-                  <span>Language</span>
-                  <select id="language">
-                    <option value="en">English</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="es">Spanish</option>
-                    <option value="it">Italian</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="ar">Arabic</option>
-                    <option value="zh">Chinese</option>
-                    <option value="ja">Japanese</option>
-                    <option value="ru">Russian</option>
-                    <option value="uk">Ukrainian</option>
-                  </select>
-                </label>
-
-                <label class="field field--wide">
-                  <span>Page or item</span>
-                  <input id="title" name="title" type="text" value="Wikimedia Foundation" autocomplete="off" spellcheck="false">
-                </label>
-              </div>
-
-              <div class="field-group is-hidden" id="direct-fields">
+              <div class="content-fields" data-content-panel="url">
                 <label class="field field--wide">
                   <span>URL</span>
-                  <input id="direct-url" name="direct-url" type="url" inputmode="url" placeholder="https://meta.wikimedia.org/wiki/..." spellcheck="false">
+                  <input id="qr-url" name="qr-url" type="url" inputmode="url" value="https://www.wikimedia.org/" spellcheck="false">
                 </label>
+              </div>
+
+              <div class="content-fields is-hidden" data-content-panel="text">
+                <label class="field field--wide">
+                  <span>Text</span>
+                  <textarea id="qr-text" name="qr-text" rows="4" placeholder="Type or paste text here..." spellcheck="true"></textarea>
+                </label>
+              </div>
+
+              <div class="content-fields is-hidden" data-content-panel="email">
+                <div class="field-group">
+                  <label class="field field--wide">
+                    <span>Email address</span>
+                    <input id="email-to" name="email-to" type="email" inputmode="email" placeholder="name@example.org" spellcheck="false">
+                  </label>
+                  <label class="field field--wide">
+                    <span>Subject</span>
+                    <input id="email-subject" name="email-subject" type="text" placeholder="Subject">
+                  </label>
+                  <label class="field field--wide">
+                    <span>Body</span>
+                    <textarea id="email-body" name="email-body" rows="3" placeholder="Message body"></textarea>
+                  </label>
+                </div>
+              </div>
+
+              <div class="content-fields is-hidden" data-content-panel="sms">
+                <div class="field-group">
+                  <label class="field field--wide">
+                    <span>Phone number</span>
+                    <input id="sms-number" name="sms-number" type="tel" inputmode="tel" placeholder="+33123456789">
+                  </label>
+                  <label class="field field--wide">
+                    <span>Message</span>
+                    <textarea id="sms-message" name="sms-message" rows="3" placeholder="SMS message"></textarea>
+                  </label>
+                </div>
+              </div>
+
+              <div class="content-fields is-hidden" data-content-panel="whatsapp">
+                <div class="field-group">
+                  <label class="field field--wide">
+                    <span>Phone number</span>
+                    <input id="whatsapp-number" name="whatsapp-number" type="tel" inputmode="tel" placeholder="+33123456789">
+                  </label>
+                  <label class="field field--wide">
+                    <span>Message</span>
+                    <textarea id="whatsapp-message" name="whatsapp-message" rows="3" placeholder="WhatsApp message"></textarea>
+                  </label>
+                </div>
+              </div>
+
+              <div class="content-fields is-hidden" data-content-panel="wifi">
+                <div class="field-group">
+                  <label class="field field--wide">
+                    <span>Network name</span>
+                    <input id="wifi-ssid" name="wifi-ssid" type="text" autocomplete="off" placeholder="SSID">
+                  </label>
+                  <label class="field">
+                    <span>Password</span>
+                    <input id="wifi-password" name="wifi-password" type="password" autocomplete="new-password" placeholder="Password">
+                  </label>
+                  <label class="field">
+                    <span>Encryption</span>
+                    <select id="wifi-encryption" name="wifi-encryption">
+                      <option value="WPA">WPA/WPA2</option>
+                      <option value="WEP">WEP</option>
+                      <option value="nopass">None</option>
+                    </select>
+                  </label>
+                  <label class="checkbox-row field--wide">
+                    <input id="wifi-hidden" name="wifi-hidden" type="checkbox">
+                    <span>Hidden network</span>
+                  </label>
+                </div>
               </div>
             </section>
 
@@ -305,7 +365,7 @@
         <main class="workspace" id="workspace-preview">
           <div class="workspace-toolbar">
             <div>
-              <span class="toolbar-label">Target</span>
+              <span class="toolbar-label">Payload</span>
               <output class="target-url" id="target-url"></output>
             </div>
             <output class="qr-meta" id="qr-meta"></output>

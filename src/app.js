@@ -1,9 +1,7 @@
 import { createQrCode } from "./qr.js";
 import {
   buildWikimediaUrl,
-  isLikelyWikimediaHost,
-  normalizeDirectUrl,
-  projectUsesLanguage
+  normalizeDirectUrl
 } from "./wikimedia.js";
 import { CENTER_LOGO_IDS, getLogo, renderLogoPreview } from "./logos.js";
 
@@ -21,15 +19,21 @@ const exportDesignsButton = document.querySelector("#export-designs");
 const refreshQrButton = document.querySelector("#refresh-qr");
 const themeDarkButton = document.querySelector("#theme-dark");
 const themeLightButton = document.querySelector("#theme-light");
-const buildMode = document.querySelector("#build-mode");
-const directMode = document.querySelector("#direct-mode");
-const builderFields = document.querySelector("#builder-fields");
-const directFields = document.querySelector("#direct-fields");
-const projectInput = document.querySelector("#project");
-const languageField = document.querySelector("#language-field");
-const languageInput = document.querySelector("#language");
-const titleInput = document.querySelector("#title");
-const directUrlInput = document.querySelector("#direct-url");
+const contentTypeButtons = document.querySelectorAll("[data-content-type]");
+const contentPanels = document.querySelectorAll("[data-content-panel]");
+const qrUrlInput = document.querySelector("#qr-url");
+const qrTextInput = document.querySelector("#qr-text");
+const emailToInput = document.querySelector("#email-to");
+const emailSubjectInput = document.querySelector("#email-subject");
+const emailBodyInput = document.querySelector("#email-body");
+const smsNumberInput = document.querySelector("#sms-number");
+const smsMessageInput = document.querySelector("#sms-message");
+const whatsappNumberInput = document.querySelector("#whatsapp-number");
+const whatsappMessageInput = document.querySelector("#whatsapp-message");
+const wifiSsidInput = document.querySelector("#wifi-ssid");
+const wifiPasswordInput = document.querySelector("#wifi-password");
+const wifiEncryptionInput = document.querySelector("#wifi-encryption");
+const wifiHiddenInput = document.querySelector("#wifi-hidden");
 const errorCorrectionInput = document.querySelector("#error-correction");
 const moduleStyleInput = document.querySelector("#module-style");
 const colorModeInput = document.querySelector("#color-mode");
@@ -65,10 +69,8 @@ const TRASH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false
 
 const QR_PRESETS = {
   article: {
-    mode: "build",
-    project: "wikipedia",
-    language: "en",
-    title: "Wikimedia Foundation",
+    contentType: "url",
+    url: "https://en.wikipedia.org/wiki/Wikimedia_Foundation",
     logo: "wikipedia",
     errorCorrection: "high",
     moduleStyle: "square",
@@ -78,9 +80,8 @@ const QR_PRESETS = {
     background: "#ffffff"
   },
   commons: {
-    mode: "build",
-    project: "commons",
-    title: "File:Example image.svg",
+    contentType: "url",
+    url: "https://commons.wikimedia.org/wiki/File:Example_image.svg",
     logo: "commons",
     errorCorrection: "high",
     moduleStyle: "rounded",
@@ -90,9 +91,8 @@ const QR_PRESETS = {
     background: "#ffffff"
   },
   wikidata: {
-    mode: "build",
-    project: "wikidata",
-    title: "Q42",
+    contentType: "url",
+    url: "https://www.wikidata.org/wiki/Q42",
     logo: "wikidata",
     errorCorrection: "high",
     moduleStyle: "square",
@@ -102,8 +102,8 @@ const QR_PRESETS = {
     background: "#ffffff"
   },
   campaign: {
-    mode: "direct",
-    directUrl: "https://meta.wikimedia.org/wiki/Wikimania",
+    contentType: "url",
+    url: "https://meta.wikimedia.org/wiki/Wikimania",
     logo: "wikimedia",
     errorCorrection: "high",
     moduleStyle: "rounded",
@@ -114,7 +114,7 @@ const QR_PRESETS = {
   }
 };
 
-let mode = "build";
+let contentType = "url";
 let selectedLogo = "none";
 let currentSvg = "";
 let currentUrl = "";
@@ -123,10 +123,19 @@ let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
 
 for (const element of [
-  projectInput,
-  languageInput,
-  titleInput,
-  directUrlInput,
+  qrUrlInput,
+  qrTextInput,
+  emailToInput,
+  emailSubjectInput,
+  emailBodyInput,
+  smsNumberInput,
+  smsMessageInput,
+  whatsappNumberInput,
+  whatsappMessageInput,
+  wifiSsidInput,
+  wifiPasswordInput,
+  wifiEncryptionInput,
+  wifiHiddenInput,
   errorCorrectionInput,
   moduleStyleInput,
   colorModeInput,
@@ -142,8 +151,9 @@ for (const element of [
 }
 
 form.addEventListener("submit", (event) => event.preventDefault());
-buildMode.addEventListener("click", () => setMode("build"));
-directMode.addEventListener("click", () => setMode("direct"));
+for (const button of contentTypeButtons) {
+  button.addEventListener("click", () => setContentType(button.dataset.contentType));
+}
 designsMenuButton.addEventListener("click", () => setDesignsMenuOpen(!designsMenuOpen));
 saveDesignButton.addEventListener("click", handleSaveDesign);
 importDesignsInput.addEventListener("change", handleImportDesigns);
@@ -177,7 +187,7 @@ initializeColorRows();
 initializePresets();
 renderCustomDesigns();
 setTheme(localStorage.getItem("wikimedia-qr-theme") || "dark");
-setMode("build");
+setContentType("url");
 
 function setTheme(nextTheme) {
   const theme = nextTheme === "light" ? "light" : "dark";
@@ -191,47 +201,42 @@ function setTheme(nextTheme) {
   localStorage.setItem("wikimedia-qr-theme", theme);
 }
 
-function setMode(nextMode) {
-  mode = nextMode;
-  const isBuild = mode === "build";
+function setContentType(nextType) {
+  contentType = normalizeContentType(nextType);
 
-  buildMode.classList.toggle("is-active", isBuild);
-  buildMode.setAttribute("aria-selected", String(isBuild));
-  directMode.classList.toggle("is-active", !isBuild);
-  directMode.setAttribute("aria-selected", String(!isBuild));
-  builderFields.classList.toggle("is-hidden", !isBuild);
-  directFields.classList.toggle("is-hidden", isBuild);
+  for (const button of contentTypeButtons) {
+    const active = button.dataset.contentType === contentType;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+
+  for (const panel of contentPanels) {
+    panel.classList.toggle("is-hidden", panel.dataset.contentPanel !== contentType);
+  }
 
   render();
 }
 
 function render() {
   try {
-    languageField.classList.toggle("is-hidden", !projectUsesLanguage(projectInput.value));
     logoSizeField.classList.toggle("is-hidden", selectedLogo === "none");
     accentColorField.classList.toggle("is-hidden", colorModeInput.value !== "gradient");
     updateLogoDetails();
     syncColorRows();
 
-    const url = mode === "build"
-      ? buildWikimediaUrl({
-        project: projectInput.value,
-        language: languageInput.value,
-        title: titleInput.value
-      })
-      : normalizeDirectUrl(directUrlInput.value);
+    const content = compileContentPayload();
 
     const effectiveErrorCorrection = selectedLogo === "none"
       ? errorCorrectionInput.value
       : "high";
-    const qr = createQrCode(url, {
+    const qr = createQrCode(content.payload, {
       errorCorrection: effectiveErrorCorrection
     });
 
     const margin = Number(marginInput.value);
     const previewSize = Number(sizeInput.value);
     currentPngSize = previewSize;
-    currentUrl = url;
+    currentUrl = content.payload;
     currentSvg = qr.toSvg({
       margin,
       foreground: foregroundInput.value,
@@ -245,13 +250,10 @@ function render() {
 
     qrStage.style.setProperty("--qr-preview-size", `${previewSize}px`);
     qrStage.innerHTML = currentSvg;
-    targetUrlOutput.value = url;
+    targetUrlOutput.value = content.label;
     qrMetaOutput.value = `v${qr.version} / ${qr.size} modules / EC ${qr.errorCorrection}`;
 
-    if (mode === "direct" && !isLikelyWikimediaHost(url)) {
-      setStatus("Direct URL is not a recognized Wikimedia movement domain.", "error");
-      scanStatusText.textContent = "Review target domain";
-    } else if (selectedLogo !== "none") {
+    if (selectedLogo !== "none") {
       setStatus("Logo selected; high error correction is applied for scannability.", "success");
       scanStatusText.textContent = "High correction active";
     } else {
@@ -270,6 +272,118 @@ function render() {
     setStatus(error.message, "error");
     setActionState(true);
   }
+}
+
+function compileContentPayload() {
+  switch (contentType) {
+    case "url":
+      return compileUrlPayload();
+    case "text":
+      return compileTextPayload();
+    case "email":
+      return compileEmailPayload();
+    case "sms":
+      return compileSmsPayload();
+    case "whatsapp":
+      return compileWhatsAppPayload();
+    case "wifi":
+      return compileWifiPayload();
+    default:
+      throw new Error("Choose a supported QR content type.");
+  }
+}
+
+function compileUrlPayload() {
+  const payload = normalizeDirectUrl(qrUrlInput.value);
+  return { payload, label: payload };
+}
+
+function compileTextPayload() {
+  const payload = requiredString(qrTextInput.value, "Enter text for the QR code.");
+  return { payload, label: summarize(payload, "Text") };
+}
+
+function compileEmailPayload() {
+  const to = requiredString(emailToInput.value, "Enter an email address.");
+  const subject = emailSubjectInput.value.trim();
+  const body = emailBodyInput.value.trim();
+  const params = new URLSearchParams();
+  if (subject) {
+    params.set("subject", subject);
+  }
+  if (body) {
+    params.set("body", body);
+  }
+
+  const query = params.toString();
+  const payload = `mailto:${to}${query ? `?${query}` : ""}`;
+  return { payload, label: `Email: ${to}` };
+}
+
+function compileSmsPayload() {
+  const number = normalizePhoneNumber(requiredString(smsNumberInput.value, "Enter a phone number."));
+  const message = smsMessageInput.value.trim();
+  const payload = `sms:${number}${message ? `?&body=${encodeURIComponent(message)}` : ""}`;
+  return { payload, label: `SMS: ${number}` };
+}
+
+function compileWhatsAppPayload() {
+  const number = normalizePhoneNumber(whatsappNumberInput.value).replace(/^\+/, "");
+  const message = whatsappMessageInput.value.trim();
+  if (!number && !message) {
+    throw new Error("Enter a WhatsApp phone number or message.");
+  }
+
+  const payload = `https://wa.me/${number}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+  return { payload, label: number ? `WhatsApp: ${number}` : "WhatsApp message" };
+}
+
+function compileWifiPayload() {
+  const ssid = requiredString(wifiSsidInput.value, "Enter a WiFi network name.");
+  const encryption = wifiEncryptionInput.value;
+  const password = wifiPasswordInput.value;
+  if (encryption !== "nopass" && !password) {
+    throw new Error("Enter a WiFi password or choose no encryption.");
+  }
+  const hidden = wifiHiddenInput.checked ? "true" : "false";
+  const payload = [
+    "WIFI:",
+    `T:${escapeWifiValue(encryption)};`,
+    `S:${escapeWifiValue(ssid)};`,
+    encryption === "nopass" ? "" : `P:${escapeWifiValue(password)};`,
+    wifiHiddenInput.checked ? `H:${hidden};` : "",
+    ";"
+  ].join("");
+
+  return { payload, label: `WiFi: ${ssid}` };
+}
+
+function normalizeContentType(value) {
+  return ["url", "text", "email", "sms", "whatsapp", "wifi"].includes(value) ? value : "url";
+}
+
+function normalizePhoneNumber(value) {
+  return String(value || "").trim().replace(/[()\s.-]/g, "");
+}
+
+function requiredString(value, message) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) {
+    throw new Error(message);
+  }
+  return trimmed;
+}
+
+function escapeWifiValue(value) {
+  return String(value || "").replace(/([\\;,":])/g, "\\$1");
+}
+
+function summarize(value, fallback) {
+  const trimmed = String(value || "").replace(/\s+/g, " ").trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  return trimmed.length > 96 ? `${trimmed.slice(0, 93)}...` : trimmed;
 }
 
 function initializeLogoSelect() {
@@ -312,10 +426,7 @@ function applyPreset(presetId) {
     return;
   }
 
-  projectInput.value = preset.project ?? projectInput.value;
-  languageInput.value = preset.language ?? languageInput.value;
-  titleInput.value = preset.title ?? titleInput.value;
-  directUrlInput.value = preset.directUrl ?? directUrlInput.value;
+  qrUrlInput.value = preset.url ?? qrUrlInput.value;
   errorCorrectionInput.value = preset.errorCorrection ?? errorCorrectionInput.value;
   moduleStyleInput.value = preset.moduleStyle ?? moduleStyleInput.value;
   colorModeInput.value = preset.colorMode ?? colorModeInput.value;
@@ -331,7 +442,7 @@ function applyPreset(presetId) {
     button.setAttribute("aria-pressed", String(active));
   }
 
-  setMode(preset.mode ?? "build");
+  setContentType(preset.contentType ?? "url");
 }
 
 function updateLogoDetails() {
@@ -449,11 +560,20 @@ async function handleImportDesigns(event) {
 
 function getDesignConfig() {
   return {
-    mode,
-    project: projectInput.value,
-    language: languageInput.value,
-    title: titleInput.value,
-    directUrl: directUrlInput.value,
+    contentType,
+    url: qrUrlInput.value,
+    text: qrTextInput.value,
+    emailTo: emailToInput.value,
+    emailSubject: emailSubjectInput.value,
+    emailBody: emailBodyInput.value,
+    smsNumber: smsNumberInput.value,
+    smsMessage: smsMessageInput.value,
+    whatsappNumber: whatsappNumberInput.value,
+    whatsappMessage: whatsappMessageInput.value,
+    wifiSsid: wifiSsidInput.value,
+    wifiPassword: wifiPasswordInput.value,
+    wifiEncryption: wifiEncryptionInput.value,
+    wifiHidden: wifiHiddenInput.checked,
     errorCorrection: errorCorrectionInput.value,
     moduleStyle: moduleStyleInput.value,
     colorMode: colorModeInput.value,
@@ -470,10 +590,19 @@ function getDesignConfig() {
 
 function applyDesignConfig(config) {
   const normalized = normalizeDesignConfig(config);
-  projectInput.value = normalized.project;
-  languageInput.value = normalized.language;
-  titleInput.value = normalized.title;
-  directUrlInput.value = normalized.directUrl;
+  qrUrlInput.value = normalized.url;
+  qrTextInput.value = normalized.text;
+  emailToInput.value = normalized.emailTo;
+  emailSubjectInput.value = normalized.emailSubject;
+  emailBodyInput.value = normalized.emailBody;
+  smsNumberInput.value = normalized.smsNumber;
+  smsMessageInput.value = normalized.smsMessage;
+  whatsappNumberInput.value = normalized.whatsappNumber;
+  whatsappMessageInput.value = normalized.whatsappMessage;
+  wifiSsidInput.value = normalized.wifiSsid;
+  wifiPasswordInput.value = normalized.wifiPassword;
+  wifiEncryptionInput.value = normalized.wifiEncryption;
+  wifiHiddenInput.checked = normalized.wifiHidden;
   errorCorrectionInput.value = normalized.errorCorrection;
   moduleStyleInput.value = normalized.moduleStyle;
   colorModeInput.value = normalized.colorMode;
@@ -492,18 +621,28 @@ function applyDesignConfig(config) {
     button.setAttribute("aria-pressed", "false");
   }
 
-  setMode(normalized.mode);
+  setContentType(normalized.contentType);
 }
 
 function normalizeDesignConfig(config) {
   const fallback = getDesignConfig();
   const source = config && typeof config === "object" ? config : {};
+  const legacyUrl = legacyConfigUrl(source, fallback.url);
   return {
-    mode: source.mode === "direct" ? "direct" : "build",
-    project: optionValue(projectInput, source.project, fallback.project),
-    language: optionValue(languageInput, source.language, fallback.language),
-    title: stringValue(source.title, fallback.title),
-    directUrl: stringValue(source.directUrl, fallback.directUrl),
+    contentType: normalizeContentType(source.contentType || (source.mode ? "url" : fallback.contentType)),
+    url: stringValue(source.url, legacyUrl),
+    text: stringValue(source.text, fallback.text),
+    emailTo: stringValue(source.emailTo, fallback.emailTo),
+    emailSubject: stringValue(source.emailSubject, fallback.emailSubject),
+    emailBody: stringValue(source.emailBody, fallback.emailBody),
+    smsNumber: stringValue(source.smsNumber, fallback.smsNumber),
+    smsMessage: stringValue(source.smsMessage, fallback.smsMessage),
+    whatsappNumber: stringValue(source.whatsappNumber, fallback.whatsappNumber),
+    whatsappMessage: stringValue(source.whatsappMessage, fallback.whatsappMessage),
+    wifiSsid: stringValue(source.wifiSsid, fallback.wifiSsid),
+    wifiPassword: stringValue(source.wifiPassword, fallback.wifiPassword),
+    wifiEncryption: optionValue(wifiEncryptionInput, source.wifiEncryption, fallback.wifiEncryption),
+    wifiHidden: Boolean(source.wifiHidden),
     errorCorrection: optionValue(errorCorrectionInput, source.errorCorrection, fallback.errorCorrection),
     moduleStyle: optionValue(moduleStyleInput, source.moduleStyle, fallback.moduleStyle),
     colorMode: optionValue(colorModeInput, source.colorMode, fallback.colorMode),
@@ -516,6 +655,27 @@ function normalizeDesignConfig(config) {
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
     exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize)
   };
+}
+
+function legacyConfigUrl(source, fallback) {
+  if (typeof source.url === "string") {
+    return source.url;
+  }
+  if (typeof source.directUrl === "string" && source.directUrl.trim()) {
+    return source.directUrl;
+  }
+  if (source.project && source.title) {
+    try {
+      return buildWikimediaUrl({
+        project: source.project,
+        language: source.language || "en",
+        title: source.title
+      });
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
 }
 
 function normalizeDesignPreset(entry) {
