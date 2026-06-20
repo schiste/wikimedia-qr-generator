@@ -1,6 +1,7 @@
 import { createQrCode } from "./qr.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
 import {
+  getLogoLibraryPreviewUrl,
   getLogoLibraryEntry,
   hasLogoLibraryEntry,
   LOGO_LIBRARY_COUNTS,
@@ -517,13 +518,7 @@ function renderLogoLibraryCard(entry) {
   const error = libraryErrorById[entry.id];
   card.className = `library-card${isActive ? " library-card-active" : ""}`;
 
-  const glyph = document.createElement("span");
-  const logo = entry.local ? getLogo(entry.id) : libraryLogosById.get(entry.id);
-  glyph.className = logo?.body ? "library-logo-glyph" : "library-logo-placeholder";
-  glyph.setAttribute("aria-hidden", "true");
-  glyph.innerHTML = logo?.body
-    ? renderLogoMarkup(logo)
-    : String(entry.code || entry.name || "?").slice(0, 3);
+  const glyph = renderLibraryLogoMark(entry);
 
   const main = document.createElement("div");
   main.className = "library-card-main";
@@ -574,18 +569,44 @@ function renderLogoLibraryCard(entry) {
   return card;
 }
 
-async function setLibraryLogoAsCenter(entry) {
-  if (entry.local) {
-    selectLogo(entry.id);
-    renderLogoLibrary();
-    return;
+function renderLibraryLogoMark(entry) {
+  const glyph = document.createElement("span");
+  const logo = libraryLogosById.get(entry.id);
+  const previewUrl = getLogoLibraryPreviewUrl(entry);
+  glyph.className = "library-logo-glyph";
+  glyph.setAttribute("aria-hidden", "true");
+
+  if (logo?.body) {
+    glyph.innerHTML = renderLogoMarkup(logo);
+    return glyph;
   }
 
+  if (previewUrl) {
+    const image = document.createElement("img");
+    image.src = previewUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.addEventListener("error", () => renderLibraryLogoFallback(glyph, entry));
+    glyph.append(image);
+    return glyph;
+  }
+
+  renderLibraryLogoFallback(glyph, entry);
+  return glyph;
+}
+
+function renderLibraryLogoFallback(glyph, entry) {
+  glyph.className = "library-logo-placeholder";
+  glyph.textContent = String(entry.code || entry.name || "?").slice(0, 3);
+}
+
+async function setLibraryLogoAsCenter(entry) {
   let logo = libraryLogosById.get(entry.id);
-  if (!logo) {
+  if (!logo && entry.commonsTitle) {
     logo = await loadLibraryLogo(entry);
   }
-  if (!logo) {
+  if (!logo && !entry.local) {
     return;
   }
 
@@ -625,7 +646,7 @@ function selectLogo(logoId) {
 
 function hydrateLibraryLogo(logoId) {
   const entry = getLogoLibraryEntry(logoId);
-  if (!entry || entry.local || libraryLogosById.has(logoId) || libraryLoadingById[logoId]) {
+  if (!entry || !entry.commonsTitle || libraryLogosById.has(logoId) || libraryLoadingById[logoId]) {
     return;
   }
 
@@ -673,6 +694,7 @@ function applyPreset(presetId) {
   selectedLogo = preset.logo ?? selectedLogo;
   ensureLogoOption(selectedLogo);
   logoSelect.value = selectedLogo;
+  hydrateLibraryLogo(selectedLogo);
 
   for (const button of presetButtons) {
     const active = button.dataset.preset === presetId;

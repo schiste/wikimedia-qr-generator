@@ -54,6 +54,16 @@ export function hasLogoLibraryEntry(id) {
   return LOGO_LIBRARY_BY_ID.has(id);
 }
 
+export function getLogoLibraryPreviewUrl(entry, width = 96) {
+  if (!entry?.commonsTitle) {
+    return "";
+  }
+
+  const fileName = String(entry.commonsTitle).replace(/^File:/i, "");
+  const params = new URLSearchParams({ width: String(width) });
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?${params}`;
+}
+
 export function normalizeLogoSearchText(value) {
   return String(value || "")
     .normalize("NFKD")

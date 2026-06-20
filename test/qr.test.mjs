@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
-import { LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
+import { getLogoLibraryPreviewUrl, LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
 import { createQrCode } from "../src/qr.js";
 import { buildWikimediaUrl, normalizeDirectUrl } from "../src/wikimedia.js";
 
@@ -79,6 +79,7 @@ test("exposes Wikimania in the central logo library", () => {
   assert.ok(CENTER_LOGO_IDS.includes("wikimania"));
   assert.equal(WIKIMEDIA_LOGOS.wikimania.sourceTitle, "File:Wikimania logo.svg");
   assert.equal(libraryEntry?.name, "Wikimania");
+  assert.match(getLogoLibraryPreviewUrl(libraryEntry), /Special:FilePath\/Wikimania%20logo\.svg/);
 });
 
 test("renders custom finder corner shapes", () => {

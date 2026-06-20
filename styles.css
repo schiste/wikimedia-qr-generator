@@ -992,9 +992,11 @@ a:focus-visible {
   padding: 7px;
 }
 
-.library-logo-glyph svg {
+.library-logo-glyph svg,
+.library-logo-glyph img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .library-logo-placeholder {
