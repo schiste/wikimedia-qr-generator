@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
+import { addPrintBleedToSvg, getExportPixelSize } from "../src/export.js";
 import { getLogoLibraryPreviewUrl, LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
 import { createQrCode } from "../src/qr.js";
 import { buildWikimediaUrl, normalizeDirectUrl } from "../src/wikimedia.js";
@@ -94,4 +95,35 @@ test("renders custom finder corner shapes", () => {
   assert.match(svg, /<circle cx="7.5" cy="7.5" r="3.5"\/>/);
   assert.match(svg, /<circle cx="7.5" cy="7.5" r="2.5" fill="#f8fafc"\/>/);
   assert.match(svg, /<rect x="6" y="6" width="3" height="3" rx="0.6"\/>/);
+});
+
+test("adds print bleed to exported SVGs", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/></svg>';
+  const withBleed = addPrintBleedToSvg(svg, {
+    background: "#f8fafc",
+    enabled: true,
+    ratio: 0.05
+  });
+
+  assert.match(withBleed, /viewBox="-5 -5 110 110"/);
+  assert.match(withBleed, /<path fill="#f8fafc" d="M-5 -5h110v110H-5z"\/>/);
+  assert.equal(addPrintBleedToSvg(svg, { enabled: false }), svg);
+});
+
+test("computes export pixel size with print bleed", () => {
+  assert.deepEqual(getExportPixelSize(600, true, 0.05), {
+    bleed: 30,
+    total: 660,
+    trim: 600
+  });
+  assert.deepEqual(getExportPixelSize(600, false), {
+    bleed: 0,
+    total: 600,
+    trim: 600
+  });
+  assert.deepEqual(getExportPixelSize(100, true, -1), {
+    bleed: 5,
+    total: 110,
+    trim: 100
+  });
 });

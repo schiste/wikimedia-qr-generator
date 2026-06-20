@@ -1,4 +1,5 @@
 import { createQrCode } from "./qr.js";
+import { addPrintBleedToSvg, getExportPixelSize } from "./export.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
 import {
   getLogoLibraryPreviewUrl,
@@ -76,6 +77,7 @@ const qrMetaOutput = document.querySelector("#qr-meta");
 const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
 const exportSizeInput = document.querySelector("#export-size");
+const printBleedInput = document.querySelector("#print-bleed");
 const copySvgButton = document.querySelector("#copy-svg");
 const downloadSvgButton = document.querySelector("#download-svg");
 const downloadPngButton = document.querySelector("#download-png");
@@ -206,9 +208,10 @@ logoLibraryDialog.addEventListener("mousedown", (event) => {
 logoLibrarySearchInput.addEventListener("input", () => {
   renderLogoLibrary();
 });
-copySvgButton.addEventListener("click", copySvg);
-downloadSvgButton.addEventListener("click", downloadSvg);
-downloadPngButton.addEventListener("click", () => downloadPng(Number(exportSizeInput.value)));
+printBleedInput.addEventListener("change", render);
+copySvgButton.addEventListener("click", () => runExportAction(copySvg));
+downloadSvgButton.addEventListener("click", () => runExportAction(downloadSvg));
+downloadPngButton.addEventListener("click", () => runExportAction(() => downloadPng(Number(exportSizeInput.value))));
 themeDarkButton.addEventListener("click", () => setTheme("dark"));
 themeLightButton.addEventListener("click", () => setTheme("light"));
 document.addEventListener("mousedown", (event) => {
@@ -299,8 +302,16 @@ function render() {
     qrMetaOutput.value = `v${qr.version} / ${qr.size} modules / EC ${qr.errorCorrection}`;
 
     if (selectedLogo !== "none") {
-      setStatus("Logo selected; high error correction is applied for scannability.", "success");
+      setStatus(
+        printBleedInput.checked
+          ? "Logo selected; high correction and print bleed are active."
+          : "Logo selected; high error correction is applied for scannability.",
+        "success"
+      );
       scanStatusText.textContent = "High correction active";
+    } else if (printBleedInput.checked) {
+      setStatus("Ready to export with print bleed.", "success");
+      scanStatusText.textContent = "Active and scannable";
     } else {
       setStatus("Ready to export.", "success");
       scanStatusText.textContent = "Active and scannable";
@@ -782,22 +793,37 @@ function handleSaveDesign() {
       config: getDesignConfig()
     }
   ];
-  writeCustomDesigns(customDesigns);
+  if (!writeCustomDesigns(customDesigns)) {
+    customDesigns = customDesigns.slice(0, -1);
+    setStatus("Could not save this design in the browser.", "error");
+    return;
+  }
   renderCustomDesigns();
   setStatus(`Saved "${trimmed}".`, "success");
 }
 
 function deleteDesign(id) {
+  const previousDesigns = customDesigns;
   customDesigns = customDesigns.filter((preset) => preset.id !== id);
-  writeCustomDesigns(customDesigns);
+  if (!writeCustomDesigns(customDesigns)) {
+    customDesigns = previousDesigns;
+    setStatus("Could not delete that saved design.", "error");
+    return;
+  }
   renderCustomDesigns();
+  setStatus("Deleted saved design.", "success");
 }
 
 function exportDesigns() {
-  downloadBlob(
-    "wikimedia-qr-designs.json",
-    new Blob([serializeCustomDesigns(customDesigns)], { type: "application/json;charset=utf-8" })
-  );
+  try {
+    downloadBlob(
+      "wikimedia-qr-designs.json",
+      new Blob([serializeCustomDesigns(customDesigns)], { type: "application/json;charset=utf-8" })
+    );
+    setStatus(`Exported ${customDesigns.length} design${customDesigns.length === 1 ? "" : "s"}.`, "success");
+  } catch (error) {
+    setStatus(error.message || "Could not export saved designs.", "error");
+  }
 }
 
 async function handleImportDesigns(event) {
@@ -813,7 +839,11 @@ async function handleImportDesigns(event) {
       ...customDesigns,
       ...imported.map((preset) => ({ ...preset, id: createDesignId() }))
     ];
-    writeCustomDesigns(customDesigns);
+    if (!writeCustomDesigns(customDesigns)) {
+      customDesigns = customDesigns.slice(0, -imported.length);
+      setStatus("Could not import designs into browser storage.", "error");
+      return;
+    }
     renderCustomDesigns();
     setStatus(`Imported ${imported.length} design${imported.length === 1 ? "" : "s"}.`, "success");
   } catch (error) {
@@ -847,7 +877,8 @@ function getDesignConfig() {
     background: backgroundInput.value,
     logo: selectedLogo,
     logoSize: logoSizeInput.value,
-    exportSize: exportSizeInput.value
+    exportSize: exportSizeInput.value,
+    printBleed: printBleedInput.checked
   };
 }
 
@@ -880,6 +911,7 @@ function applyDesignConfig(config) {
   hydrateLibraryLogo(selectedLogo);
   logoSizeInput.value = normalized.logoSize;
   exportSizeInput.value = normalized.exportSize;
+  printBleedInput.checked = normalized.printBleed;
 
   for (const button of presetButtons) {
     button.classList.remove("is-active");
@@ -918,7 +950,8 @@ function normalizeDesignConfig(config) {
     background: colorValue(source.background, fallback.background),
     logo: normalizeLogoId(source.logo, fallback.logo),
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
-    exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize)
+    exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize),
+    printBleed: booleanValue(source.printBleed, fallback.printBleed)
   };
 }
 
@@ -977,8 +1010,10 @@ function readCustomDesigns() {
 function writeCustomDesigns(presets) {
   try {
     window.localStorage.setItem(STORAGE_KEY, serializeCustomDesigns(presets));
+    return true;
   } catch {
     // Storage may be unavailable in private or restricted browser contexts.
+    return false;
   }
 }
 
@@ -1036,6 +1071,10 @@ function stringValue(value, fallback) {
   return typeof value === "string" ? value : fallback;
 }
 
+function booleanValue(value, fallback) {
+  return typeof value === "boolean" ? value : Boolean(fallback);
+}
+
 function removeObjectKey(object, key) {
   const { [key]: removed, ...rest } = object;
   return rest;
@@ -1052,14 +1091,27 @@ function setActionState(disabled) {
   downloadPngButton.disabled = disabled;
 }
 
+async function runExportAction(action) {
+  setActionState(true);
+  try {
+    await action();
+  } catch (error) {
+    setStatus(error.message || "Export failed.", "error");
+  } finally {
+    setActionState(!currentSvg);
+  }
+}
+
 function downloadSvg() {
-  downloadBlob(`${fileBaseName()}.svg`, new Blob([currentSvg], { type: "image/svg+xml" }));
+  downloadBlob(`${fileBaseName()}${fileExportSuffix()}.svg`, new Blob([getExportSvg()], { type: "image/svg+xml" }));
+  setStatus("SVG downloaded.", "success");
 }
 
 async function downloadPng(size = currentPngSize) {
   const image = new Image();
-  const svgBlob = new Blob([currentSvg], { type: "image/svg+xml" });
+  const svgBlob = new Blob([getExportSvg()], { type: "image/svg+xml" });
   const url = URL.createObjectURL(svgBlob);
+  const dimensions = getExportPixelSize(size, printBleedInput.checked);
 
   try {
     await new Promise((resolve, reject) => {
@@ -1069,25 +1121,32 @@ async function downloadPng(size = currentPngSize) {
     });
 
     const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = dimensions.total;
+    canvas.height = dimensions.total;
     const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Could not create a PNG canvas.");
+    }
+    context.fillStyle = backgroundInput.value;
+    context.fillRect(0, 0, dimensions.total, dimensions.total);
     context.imageSmoothingEnabled = false;
-    context.drawImage(image, 0, 0, size, size);
+    context.drawImage(image, 0, 0, dimensions.total, dimensions.total);
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-    downloadBlob(`${fileBaseName()}.png`, blob);
+    downloadBlob(`${fileBaseName()}${fileExportSuffix()}.png`, blob);
+    setStatus(`PNG downloaded at ${dimensions.total} x ${dimensions.total}.`, "success");
   } finally {
     URL.revokeObjectURL(url);
   }
 }
 
 async function copySvg() {
+  const svg = getExportSvg();
   if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(currentSvg);
+    await navigator.clipboard.writeText(svg);
   } else {
     const textarea = document.createElement("textarea");
-    textarea.value = currentSvg;
+    textarea.value = svg;
     textarea.setAttribute("readonly", "");
     textarea.style.position = "fixed";
     textarea.style.opacity = "0";
@@ -1100,6 +1159,9 @@ async function copySvg() {
 }
 
 function downloadBlob(filename, blob) {
+  if (!blob) {
+    throw new Error("Could not build the export file.");
+  }
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   link.href = url;
@@ -1108,6 +1170,17 @@ function downloadBlob(filename, blob) {
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function getExportSvg() {
+  return addPrintBleedToSvg(currentSvg, {
+    background: backgroundInput.value,
+    enabled: printBleedInput.checked
+  });
+}
+
+function fileExportSuffix() {
+  return printBleedInput.checked ? "-bleed" : "";
 }
 
 function fileBaseName() {
