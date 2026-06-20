@@ -261,51 +261,22 @@
               <p class="section-note">Same bundled Wikimedia glyph set as the logo generator; no uploads and no non-Wikimedia marks.</p>
             </section>
 
-            <section class="control-section" aria-labelledby="style-heading">
+            <section class="control-section" aria-labelledby="palette-heading">
               <div class="section-heading">
                 <div class="section-title">
                   <span class="status-dot status-dot-amber" aria-hidden="true"></span>
-                  <h2 id="style-heading">4. QR Style</h2>
+                  <h2 id="palette-heading">4. Palette & Colors</h2>
                 </div>
-                <span class="section-meta">SVG</span>
+                <span class="section-meta">Color</span>
               </div>
 
-              <div class="options-grid" aria-label="QR options">
-                <label class="field">
-                  <span>Error correction</span>
-                  <select id="error-correction">
-                    <option value="medium">Medium</option>
-                    <option value="quartile">Quartile</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Module style</span>
-                  <select id="module-style">
-                    <option value="square">Square</option>
-                    <option value="rounded">Rounded</option>
-                    <option value="dot">Dots</option>
-                  </select>
-                </label>
-
+              <div class="options-grid" aria-label="QR colors">
                 <label class="field">
                   <span>Color mode</span>
                   <select id="color-mode">
                     <option value="solid">Solid</option>
                     <option value="gradient">Gradient</option>
                   </select>
-                </label>
-
-                <label class="field">
-                  <span>Quiet zone</span>
-                  <input id="margin" type="range" min="2" max="8" value="4">
-                </label>
-
-                <label class="field field--wide">
-                  <span>Preview size</span>
-                  <input id="size" type="range" min="192" max="1024" step="16" value="512">
                 </label>
 
                 <div class="palette-panel">
@@ -340,6 +311,66 @@
                     <input id="background" type="color" value="#ffffff" aria-label="Custom paper color">
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <section class="control-section" aria-labelledby="shape-heading">
+              <div class="section-heading">
+                <div class="section-title">
+                  <span class="status-dot" aria-hidden="true"></span>
+                  <h2 id="shape-heading">5. Dots & Corner Shapes</h2>
+                </div>
+                <span class="section-meta">SVG</span>
+              </div>
+
+              <div class="options-grid" aria-label="QR shape options">
+                <label class="field">
+                  <span>Dot pattern</span>
+                  <select id="module-style">
+                    <option value="square">Square</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="dot">Dots</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Corner squares</span>
+                  <select id="corner-square-style">
+                    <option value="square">Square</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="extra-rounded">Extra rounded</option>
+                    <option value="dot">Circular ring</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Corner dots</span>
+                  <select id="corner-dot-style">
+                    <option value="square">Square</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="dot">Circle</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Error correction</span>
+                  <select id="error-correction">
+                    <option value="medium">Medium</option>
+                    <option value="quartile">Quartile</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Quiet zone</span>
+                  <input id="margin" type="range" min="2" max="8" value="4">
+                </label>
+
+                <label class="field">
+                  <span>Preview size</span>
+                  <input id="size" type="range" min="192" max="1024" step="16" value="512">
+                </label>
               </div>
             </section>
           </form>

@@ -34,6 +34,8 @@ const wifiEncryptionInput = document.querySelector("#wifi-encryption");
 const wifiHiddenInput = document.querySelector("#wifi-hidden");
 const errorCorrectionInput = document.querySelector("#error-correction");
 const moduleStyleInput = document.querySelector("#module-style");
+const cornerSquareStyleInput = document.querySelector("#corner-square-style");
+const cornerDotStyleInput = document.querySelector("#corner-dot-style");
 const colorModeInput = document.querySelector("#color-mode");
 const marginInput = document.querySelector("#margin");
 const sizeInput = document.querySelector("#size");
@@ -72,6 +74,8 @@ const QR_PRESETS = {
     logo: "wikipedia",
     errorCorrection: "high",
     moduleStyle: "square",
+    cornerSquareStyle: "square",
+    cornerDotStyle: "square",
     colorMode: "solid",
     foreground: "#202122",
     foregroundSecondary: "#14866d",
@@ -83,6 +87,8 @@ const QR_PRESETS = {
     logo: "commons",
     errorCorrection: "high",
     moduleStyle: "rounded",
+    cornerSquareStyle: "dot",
+    cornerDotStyle: "dot",
     colorMode: "solid",
     foreground: "#006bb6",
     foregroundSecondary: "#14866d",
@@ -94,6 +100,8 @@ const QR_PRESETS = {
     logo: "wikidata",
     errorCorrection: "high",
     moduleStyle: "square",
+    cornerSquareStyle: "square",
+    cornerDotStyle: "square",
     colorMode: "solid",
     foreground: "#202122",
     foregroundSecondary: "#049dff",
@@ -105,6 +113,8 @@ const QR_PRESETS = {
     logo: "wikimedia",
     errorCorrection: "high",
     moduleStyle: "rounded",
+    cornerSquareStyle: "rounded",
+    cornerDotStyle: "dot",
     colorMode: "gradient",
     foreground: "#006bb6",
     foregroundSecondary: "#14866d",
@@ -134,6 +144,8 @@ for (const element of [
   wifiHiddenInput,
   errorCorrectionInput,
   moduleStyleInput,
+  cornerSquareStyleInput,
+  cornerDotStyleInput,
   colorModeInput,
   marginInput,
   sizeInput,
@@ -239,6 +251,8 @@ function render() {
       foregroundSecondary: foregroundSecondaryInput.value,
       background: backgroundInput.value,
       moduleStyle: moduleStyleInput.value,
+      cornerSquareStyle: cornerSquareStyleInput.value,
+      cornerDotStyle: cornerDotStyleInput.value,
       colorMode: colorModeInput.value,
       logo: getLogo(selectedLogo),
       logoSize: Number(logoSizeInput.value) / 100
@@ -412,6 +426,8 @@ function applyPreset(presetId) {
   qrUrlInput.value = preset.url ?? qrUrlInput.value;
   errorCorrectionInput.value = preset.errorCorrection ?? errorCorrectionInput.value;
   moduleStyleInput.value = preset.moduleStyle ?? moduleStyleInput.value;
+  cornerSquareStyleInput.value = preset.cornerSquareStyle ?? cornerSquareStyleInput.value;
+  cornerDotStyleInput.value = preset.cornerDotStyle ?? cornerDotStyleInput.value;
   colorModeInput.value = preset.colorMode ?? colorModeInput.value;
   foregroundInput.value = preset.foreground ?? foregroundInput.value;
   foregroundSecondaryInput.value = preset.foregroundSecondary ?? foregroundSecondaryInput.value;
@@ -557,6 +573,8 @@ function getDesignConfig() {
     wifiHidden: wifiHiddenInput.checked,
     errorCorrection: errorCorrectionInput.value,
     moduleStyle: moduleStyleInput.value,
+    cornerSquareStyle: cornerSquareStyleInput.value,
+    cornerDotStyle: cornerDotStyleInput.value,
     colorMode: colorModeInput.value,
     margin: marginInput.value,
     size: sizeInput.value,
@@ -584,6 +602,8 @@ function applyDesignConfig(config) {
   wifiHiddenInput.checked = normalized.wifiHidden;
   errorCorrectionInput.value = normalized.errorCorrection;
   moduleStyleInput.value = normalized.moduleStyle;
+  cornerSquareStyleInput.value = normalized.cornerSquareStyle;
+  cornerDotStyleInput.value = normalized.cornerDotStyle;
   colorModeInput.value = normalized.colorMode;
   marginInput.value = normalized.margin;
   sizeInput.value = normalized.size;
@@ -622,6 +642,8 @@ function normalizeDesignConfig(config) {
     wifiHidden: Boolean(source.wifiHidden),
     errorCorrection: optionValue(errorCorrectionInput, source.errorCorrection, fallback.errorCorrection),
     moduleStyle: optionValue(moduleStyleInput, source.moduleStyle, fallback.moduleStyle),
+    cornerSquareStyle: optionValue(cornerSquareStyleInput, source.cornerSquareStyle, fallback.cornerSquareStyle),
+    cornerDotStyle: optionValue(cornerDotStyleInput, source.cornerDotStyle, fallback.cornerDotStyle),
     colorMode: optionValue(colorModeInput, source.colorMode, fallback.colorMode),
     margin: rangeValue(marginInput, source.margin, fallback.margin),
     size: rangeValue(sizeInput, source.size, fallback.size),

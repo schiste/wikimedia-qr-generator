@@ -526,6 +526,8 @@ function renderSvg(modules, options = {}) {
   const foreground = escapeAttribute(options.foreground ?? "#202122");
   const background = escapeAttribute(options.background ?? "#ffffff");
   const moduleStyle = normalizeModuleStyle(options.moduleStyle);
+  const cornerSquareStyle = normalizeCornerSquareStyle(options.cornerSquareStyle);
+  const cornerDotStyle = normalizeCornerDotStyle(options.cornerDotStyle);
   const colorDefs = renderColorDefs(options);
   const moduleFill = colorDefs ? "url(#qr-dots-gradient)" : foreground;
   const size = modules.length;
@@ -540,7 +542,16 @@ function renderSvg(modules, options = {}) {
   const darkModules = renderModules(modules, {
     color: moduleFill,
     margin,
+    qrSize: size,
     style: moduleStyle
+  });
+  const finderPatterns = renderFinderPatterns({
+    background,
+    color: moduleFill,
+    dotStyle: cornerDotStyle,
+    margin,
+    qrSize: size,
+    squareStyle: cornerSquareStyle
   });
 
   return [
@@ -548,6 +559,7 @@ function renderSvg(modules, options = {}) {
     colorDefs,
     `<path fill="${background}" d="M0 0h${dimension}v${dimension}H0z"/>`,
     darkModules,
+    finderPatterns,
     logoLayer,
     "</svg>"
   ].filter(Boolean).join("");
@@ -568,7 +580,7 @@ function renderModules(modules, options) {
     const darkModules = [];
     for (let y = 0; y < modules.length; y += 1) {
       for (let x = 0; x < modules.length; x += 1) {
-        if (modules[y][x]) {
+        if (modules[y][x] && !isFinderPatternArea(x, y, options.qrSize)) {
           darkModules.push(`M${x + options.margin},${y + options.margin}h1v1h-1z`);
         }
       }
@@ -580,7 +592,7 @@ function renderModules(modules, options) {
   const elements = [];
   for (let y = 0; y < modules.length; y += 1) {
     for (let x = 0; x < modules.length; x += 1) {
-      if (!modules[y][x]) {
+      if (!modules[y][x] || isFinderPatternArea(x, y, options.qrSize)) {
         continue;
       }
       if (options.style === "dot") {
@@ -592,6 +604,64 @@ function renderModules(modules, options) {
   }
 
   return `<g fill="${options.color}">${elements.join("")}</g>`;
+}
+
+function renderFinderPatterns(options) {
+  const positions = [
+    [0, 0],
+    [options.qrSize - 7, 0],
+    [0, options.qrSize - 7]
+  ];
+  return `<g fill="${options.color}">${positions.map(([x, y]) => renderFinderPattern(x + options.margin, y + options.margin, options)).join("")}</g>`;
+}
+
+function renderFinderPattern(x, y, options) {
+  const centerX = x + 3.5;
+  const centerY = y + 3.5;
+  const outer = renderCornerSquare(x, y, centerX, centerY, options.squareStyle);
+  const innerCutout = options.squareStyle === "dot"
+    ? `<circle cx="${centerX}" cy="${centerY}" r="2.5" fill="${options.background}"/>`
+    : `<rect x="${x + 1}" y="${y + 1}" width="5" height="5" rx="${cornerRadius(options.squareStyle, 5)}" fill="${options.background}"/>`;
+  const dot = renderCornerDot(x + 2, y + 2, centerX, centerY, options.dotStyle);
+  return [
+    "<g>",
+    outer,
+    innerCutout,
+    dot,
+    "</g>"
+  ].join("");
+}
+
+function renderCornerSquare(x, y, centerX, centerY, style) {
+  if (style === "dot") {
+    return `<circle cx="${centerX}" cy="${centerY}" r="3.5"/>`;
+  }
+  return `<rect x="${x}" y="${y}" width="7" height="7" rx="${cornerRadius(style, 7)}"/>`;
+}
+
+function renderCornerDot(x, y, centerX, centerY, style) {
+  if (style === "dot") {
+    return `<circle cx="${centerX}" cy="${centerY}" r="1.5"/>`;
+  }
+  return `<rect x="${x}" y="${y}" width="3" height="3" rx="${style === "rounded" ? 0.6 : 0}"/>`;
+}
+
+function cornerRadius(style, size) {
+  if (style === "extra-rounded") {
+    return round(size * 0.32);
+  }
+  if (style === "rounded") {
+    return round(size * 0.18);
+  }
+  return 0;
+}
+
+function isFinderPatternArea(x, y, size) {
+  return (
+    (x < 7 && y < 7) ||
+    (x >= size - 7 && y < 7) ||
+    (x < 7 && y >= size - 7)
+  );
 }
 
 function renderLogoLayer(logo, options) {
@@ -622,6 +692,14 @@ function renderLogoLayer(logo, options) {
 }
 
 function normalizeModuleStyle(value) {
+  return ["square", "rounded", "dot"].includes(value) ? value : "square";
+}
+
+function normalizeCornerSquareStyle(value) {
+  return ["square", "rounded", "extra-rounded", "dot"].includes(value) ? value : "square";
+}
+
+function normalizeCornerDotStyle(value) {
   return ["square", "rounded", "dot"].includes(value) ? value : "square";
 }
 

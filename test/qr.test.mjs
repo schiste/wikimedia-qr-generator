@@ -71,3 +71,17 @@ test("renders styled QR SVGs with Wikimedia logos", () => {
   assert.match(svg, /Wikimedia Commons/);
   assert.match(svg, /stroke="#006699"/);
 });
+
+test("renders custom finder corner shapes", () => {
+  const qr = createQrCode("https://www.wikimedia.org/");
+  const svg = qr.toSvg({
+    margin: 4,
+    cornerSquareStyle: "dot",
+    cornerDotStyle: "rounded",
+    background: "#f8fafc"
+  });
+
+  assert.match(svg, /<circle cx="7.5" cy="7.5" r="3.5"\/>/);
+  assert.match(svg, /<circle cx="7.5" cy="7.5" r="2.5" fill="#f8fafc"\/>/);
+  assert.match(svg, /<rect x="6" y="6" width="3" height="3" rx="0.6"\/>/);
+});
