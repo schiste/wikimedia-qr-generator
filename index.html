@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Generate SVG and PNG QR codes for Wikimedia links.">
+    <title>Wikimedia QR Generator</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="src/app.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="app-title">
+        <div class="workspace__header">
+          <div>
+            <p class="eyebrow">Community tool</p>
+            <h1 id="app-title">Wikimedia QR Generator</h1>
+          </div>
+          <p class="privacy-note">Client-side SVG and PNG export</p>
+        </div>
+
+        <div class="generator-grid">
+          <form class="controls" id="qr-form">
+            <section class="control-section" aria-labelledby="content-heading">
+              <div class="section-heading">
+                <span class="section-heading__index">1</span>
+                <div>
+                  <h2 id="content-heading">Content</h2>
+                  <p>Build a Wikimedia page URL or paste a campaign link.</p>
+                </div>
+              </div>
+
+              <div class="mode-switch" role="tablist" aria-label="QR target mode">
+                <button class="mode-switch__button is-active" id="build-mode" type="button" role="tab" aria-selected="true">Build URL</button>
+                <button class="mode-switch__button" id="direct-mode" type="button" role="tab" aria-selected="false">Paste URL</button>
+              </div>
+
+              <div class="field-group" id="builder-fields">
+                <label class="field">
+                  <span>Project</span>
+                  <select id="project">
+                    <option value="wikipedia">Wikipedia</option>
+                    <option value="commons">Wikimedia Commons</option>
+                    <option value="wikidata">Wikidata</option>
+                    <option value="wiktionary">Wiktionary</option>
+                    <option value="wikisource">Wikisource</option>
+                    <option value="meta">Meta-Wiki</option>
+                    <option value="mediawiki">MediaWiki</option>
+                  </select>
+                </label>
+
+                <label class="field" id="language-field">
+                  <span>Language</span>
+                  <select id="language">
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="es">Spanish</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="ar">Arabic</option>
+                    <option value="zh">Chinese</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ru">Russian</option>
+                    <option value="uk">Ukrainian</option>
+                  </select>
+                </label>
+
+                <label class="field field--wide">
+                  <span>Page or item</span>
+                  <input id="title" name="title" type="text" value="Wikimedia Foundation" autocomplete="off" spellcheck="false">
+                </label>
+              </div>
+
+              <div class="field-group is-hidden" id="direct-fields">
+                <label class="field field--wide">
+                  <span>URL</span>
+                  <input id="direct-url" name="direct-url" type="url" inputmode="url" placeholder="https://meta.wikimedia.org/wiki/..." spellcheck="false">
+                </label>
+              </div>
+            </section>
+
+            <section class="control-section" aria-labelledby="style-heading">
+              <div class="section-heading">
+                <span class="section-heading__index">2</span>
+                <div>
+                  <h2 id="style-heading">Style</h2>
+                  <p>Shape and color controls render directly in the exported SVG.</p>
+                </div>
+              </div>
+
+              <div class="options-grid" aria-label="QR options">
+                <label class="field">
+                  <span>Error correction</span>
+                  <select id="error-correction">
+                    <option value="medium">Medium</option>
+                    <option value="quartile">Quartile</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Module style</span>
+                  <select id="module-style">
+                    <option value="square">Square</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="dot">Dots</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Color mode</span>
+                  <select id="color-mode">
+                    <option value="solid">Solid</option>
+                    <option value="gradient">Gradient</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Quiet zone</span>
+                  <input id="margin" type="range" min="2" max="8" value="4">
+                </label>
+
+                <label class="field">
+                  <span>Preview size</span>
+                  <input id="size" type="range" min="192" max="1024" step="16" value="512">
+                </label>
+
+                <div class="swatches" aria-label="QR colors">
+                  <label>
+                    <span>Ink</span>
+                    <input id="foreground" type="color" value="#202122">
+                  </label>
+                  <label id="accent-color-field" class="is-hidden">
+                    <span>Accent</span>
+                    <input id="foreground-secondary" type="color" value="#14866d">
+                  </label>
+                  <label>
+                    <span>Paper</span>
+                    <input id="background" type="color" value="#ffffff">
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section class="control-section logo-panel" aria-labelledby="logo-heading">
+              <div class="section-heading">
+                <span class="section-heading__index">3</span>
+                <div>
+                  <h2 id="logo-heading">Center Logo</h2>
+                  <p>Preset marks only; no custom uploads or third-party logos.</p>
+                </div>
+              </div>
+              <div class="logo-picker" id="logo-picker" aria-label="Wikimedia logo presets">
+                <button class="logo-option is-active" type="button" data-logo="none" aria-pressed="true">
+                  <span class="logo-option__empty" aria-hidden="true"></span>
+                  <span>None</span>
+                </button>
+                <button class="logo-option" type="button" data-logo="wikimedia" aria-pressed="false">
+                  <span class="logo-option__mark"></span>
+                  <span>Wikimedia</span>
+                </button>
+                <button class="logo-option" type="button" data-logo="commons" aria-pressed="false">
+                  <span class="logo-option__mark"></span>
+                  <span>Commons</span>
+                </button>
+                <button class="logo-option" type="button" data-logo="wikidata" aria-pressed="false">
+                  <span class="logo-option__mark"></span>
+                  <span>Wikidata</span>
+                </button>
+              </div>
+
+              <label class="field" id="logo-size-field">
+                <span>Logo size</span>
+                <input id="logo-size" type="range" min="18" max="32" value="24">
+              </label>
+            </section>
+          </form>
+
+          <section class="preview-pane" aria-label="Generated QR code">
+            <div class="preview-pane__topline">
+              <div>
+                <p class="preview-pane__label">Target</p>
+                <output class="target-url" id="target-url"></output>
+              </div>
+              <output class="qr-meta" id="qr-meta"></output>
+            </div>
+
+            <div class="qr-stage" id="qr-stage" aria-live="polite"></div>
+
+            <p class="status-line" id="status-line" role="status"></p>
+
+            <div class="scan-status">
+              <div>
+                <span class="scan-status__label">Status</span>
+                <strong id="scan-status-text">Active and scannable</strong>
+              </div>
+              <span class="scan-status__dot" aria-hidden="true"></span>
+            </div>
+
+            <div class="export-controls" aria-label="Export settings">
+              <label class="field">
+                <span>File format</span>
+                <select id="download-format">
+                  <option value="png">PNG</option>
+                  <option value="svg">SVG</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Export size</span>
+                <select id="export-size">
+                  <option value="300">300 x 300</option>
+                  <option value="600" selected>600 x 600</option>
+                  <option value="1200">1200 x 1200</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="actions">
+              <button class="button button--primary" id="download-qr" type="button">Download QR</button>
+              <button class="button" id="copy-svg" type="button">Copy SVG</button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <footer class="site-footer">
+        <span>AGPL-3.0-or-later</span>
+        <a href="https://github.com/schiste/wikimedia-qr-generator">Source</a>
+        <span>Community tool, not an official Wikimedia Foundation service.</span>
+      </footer>
+    </main>
+  </body>
+</html>

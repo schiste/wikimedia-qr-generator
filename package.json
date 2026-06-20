@@ -1,0 +1,14 @@
+{
+  "name": "wikimedia-qr-generator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A small browser service for generating QR codes for Wikimedia pages and tools.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5173 --bind 127.0.0.1",
+    "check": "node --check src/app.js && node --check src/qr.js && node --check src/wikimedia.js && node --test",
+    "test": "node --test"
+  }
+}
+
