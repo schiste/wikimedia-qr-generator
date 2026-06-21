@@ -26,6 +26,9 @@ import { CENTER_LOGO_IDS, getLogo, renderLogoMarkup, renderLogoPreview } from ".
 
 const form = document.querySelector("#qr-form");
 const appShell = document.querySelector("#app-shell");
+const appPicker = document.querySelector("#app-picker");
+const appPickerButton = document.querySelector("#app-picker-button");
+const appPickerMenu = document.querySelector("#app-picker-menu");
 const designsMenu = document.querySelector("#designs-menu");
 const designsMenuButton = document.querySelector("#designs-menu-button");
 const designsDropdown = document.querySelector("#designs-dropdown");
@@ -177,6 +180,7 @@ let currentUrl = "";
 let currentPngSize = 512;
 let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
+let appPickerOpen = false;
 
 for (const element of [
   qrUrlInput,
@@ -221,6 +225,7 @@ form.addEventListener("submit", (event) => event.preventDefault());
 for (const button of contentTypeButtons) {
   button.addEventListener("click", () => setContentType(button.dataset.contentType));
 }
+appPickerButton.addEventListener("click", () => setAppPickerOpen(!appPickerOpen));
 designsMenuButton.addEventListener("click", () => setDesignsMenuOpen(!designsMenuOpen));
 saveDesignButton.addEventListener("click", handleSaveDesign);
 importDesignsInput.addEventListener("change", handleImportDesigns);
@@ -251,12 +256,16 @@ bulkGenerateButton.addEventListener("click", runBulkGeneration);
 themeDarkButton.addEventListener("click", () => setTheme("dark"));
 themeLightButton.addEventListener("click", () => setTheme("light"));
 document.addEventListener("mousedown", (event) => {
+  if (appPickerOpen && !appPicker.contains(event.target)) {
+    setAppPickerOpen(false);
+  }
   if (designsMenuOpen && !designsMenu.contains(event.target)) {
     setDesignsMenuOpen(false);
   }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    setAppPickerOpen(false);
     setDesignsMenuOpen(false);
     closeLogoLibrary();
   }
@@ -267,8 +276,14 @@ initializeLogoLibraryFilters();
 initializeColorRows();
 initializePresets();
 renderCustomDesigns();
-setTheme(localStorage.getItem("wikimedia-qr-theme") || "dark");
+setTheme(localStorage.getItem("wikimedia-qr-theme") || "light");
 setContentType("url");
+
+function setAppPickerOpen(open) {
+  appPickerOpen = open;
+  appPickerMenu.classList.toggle("is-hidden", !open);
+  appPickerButton.setAttribute("aria-expanded", String(open));
+}
 
 function setTheme(nextTheme) {
   const theme = nextTheme === "light" ? "light" : "dark";

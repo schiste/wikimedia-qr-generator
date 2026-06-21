@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +10,40 @@
     <script type="module" src="src/app.js"></script>
   </head>
   <body>
-    <div class="app-shell theme-dark" id="app-shell">
+    <div class="app-shell theme-light" id="app-shell">
       <a class="skip-link" href="#workspace-preview">Skip to QR preview</a>
 
       <header class="top-band">
         <div class="top-band-title">
-          <h1>Wikimedia QR Generator</h1>
-          <p>Client-side codes for movement links and campaign pages</p>
+          <div class="app-picker" id="app-picker">
+            <h1>
+              <button class="app-picker-button" id="app-picker-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Choose Wikimedia generator">
+                <span class="app-picker-title">Wikimedia QR Generator</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </h1>
+            <p>Client-side codes for movement links and campaign pages</p>
+
+            <div class="app-picker-menu is-hidden" id="app-picker-menu" role="menu" aria-label="Wikimedia generator picker">
+              <a class="app-picker-option app-picker-option-current" href="/" role="menuitem" aria-current="page">
+                <span class="app-picker-option-title">
+                  <span>Wikimedia QR Generator</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span class="app-picker-option-description">Client-side codes for movement links and campaign pages</span>
+              </a>
+              <a class="app-picker-option" href="https://logo-round-gen.toolforge.org/" role="menuitem">
+                <span class="app-picker-option-title">
+                  <span>WikiRound Generator</span>
+                </span>
+                <span class="app-picker-option-description">Live Wikimedia logo clusters</span>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="top-band-actions">
           <div class="design-toolbar">
@@ -70,13 +97,13 @@
           </button>
 
           <div class="theme-toggle" role="group" aria-label="Interface theme">
-            <button id="theme-light" type="button" aria-label="Light interface" aria-pressed="false">
+            <button class="active" id="theme-light" type="button" aria-label="Light interface" aria-pressed="true">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
                 <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
-            <button class="active" id="theme-dark" type="button" aria-label="Dark interface" aria-pressed="true">
+            <button id="theme-dark" type="button" aria-label="Dark interface" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M20 14.7A8.5 8.5 0 0 1 9.3 4 7 7 0 1 0 20 14.7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
               </svg>
