@@ -1,7 +1,9 @@
 import { parseCsv, formatCsvIssues } from "./csv.js";
+import { getExportPixelSize } from "./export.js";
 import { normalizeDirectUrl } from "./wikimedia.js";
 
 export const ADVANCED_BULK_LIMIT = 100;
+export const ADVANCED_BULK_MAX_RASTER_PIXELS = 200_000_000;
 export const ADVANCED_BULK_COLUMNS = [
   "filename",
   "format",
@@ -244,6 +246,10 @@ export function lintAdvancedBulkCsv(text, options = {}) {
     }
   }
 
+  if (issues.length === 0) {
+    issues.push(...validateAdvancedBulkWorkload(rows, options));
+  }
+
   return {
     ok: issues.length === 0,
     issues,
@@ -257,6 +263,39 @@ export function parseAdvancedBulkCsv(text, options = {}) {
     throw new AdvancedBulkValidationError(result.issues);
   }
   return result.rows;
+}
+
+export function validateAdvancedBulkWorkload(rows, options = {}) {
+  const maxRasterPixels = Number(options.maxRasterPixels ?? ADVANCED_BULK_MAX_RASTER_PIXELS);
+  if (!Number.isFinite(maxRasterPixels) || maxRasterPixels <= 0) {
+    return [];
+  }
+
+  let rasterPixels = 0;
+  let rasterFiles = 0;
+
+  for (const row of rows) {
+    if (row.format !== "png" && row.format !== "both") {
+      continue;
+    }
+
+    const dimensions = getExportPixelSize(Number(row.exportSize), row.config.printBleed);
+    rasterPixels += dimensions.total * dimensions.total;
+    rasterFiles += 1;
+
+    if (rasterPixels > maxRasterPixels) {
+      return [makeIssue(
+        row.lineNumber,
+        "exportSize",
+        [
+          `Advanced bulk raster workload is too large (${formatMegapixels(rasterPixels)} MP across ${rasterFiles} PNG export${rasterFiles === 1 ? "" : "s"}).`,
+          `Reduce exportSize, choose SVG for some rows, or split the CSV. Limit: ${formatMegapixels(maxRasterPixels)} MP.`
+        ].join(" ")
+      )];
+    }
+  }
+
+  return [];
 }
 
 export function formatAdvancedBulkIssues(issues, options = {}) {
@@ -627,6 +666,11 @@ function escapeWifiValue(value) {
 function summarize(value, fallback) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   return text.length > 42 ? `${text.slice(0, 39)}...` : text || fallback;
+}
+
+function formatMegapixels(pixels) {
+  const value = pixels / 1_000_000;
+  return value >= 10 ? String(Math.round(value)) : value.toFixed(1);
 }
 
 function makeIssue(line, column, message) {

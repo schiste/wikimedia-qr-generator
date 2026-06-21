@@ -111,3 +111,26 @@ test("advanced bulk creates safe output names and template csv", () => {
   assert.match(createAdvancedBulkTemplateCsv(BASE_CONFIG), /^filename,format,contentType,url,/);
   assert.match(createAdvancedBulkTemplateCsv(BASE_CONFIG), /wikimedia-example,png,url,/);
 });
+
+test("advanced bulk rejects raster jobs that are too large", () => {
+  const result = lintAdvancedBulkCsv("filename,format,exportSize,url\nbig,png,1200,https://example.org", {
+    baseConfig: BASE_CONFIG,
+    isLogoKnown,
+    maxRasterPixels: 1000
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(formatAdvancedBulkIssues(result.issues), /Advanced bulk raster workload is too large/);
+  assert.match(formatAdvancedBulkIssues(result.issues), /Reduce exportSize, choose SVG/);
+});
+
+test("advanced bulk workload limit ignores SVG-only rows", () => {
+  const rows = parseAdvancedBulkCsv("filename,format,exportSize,url\nbig,svg,4096,https://example.org", {
+    baseConfig: BASE_CONFIG,
+    isLogoKnown,
+    maxRasterPixels: 1
+  });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].format, "svg");
+});

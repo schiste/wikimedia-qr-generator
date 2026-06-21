@@ -210,6 +210,7 @@ let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
 let appPickerOpen = false;
 let appPickerMenu = null;
+let actionBusy = false;
 
 for (const element of [
   qrUrlInput,
@@ -431,7 +432,7 @@ function render() {
       scanStatusText.textContent = "Active and scannable";
     }
 
-    setActionState(false);
+    refreshActionState();
   } catch (error) {
     currentSvg = "";
     currentUrl = "";
@@ -440,7 +441,7 @@ function render() {
     qrMetaOutput.value = "";
     scanStatusText.textContent = "Waiting for valid content";
     setStatus(error.message, "error");
-    setActionState(true);
+    refreshActionState();
   }
 }
 
@@ -1289,14 +1290,20 @@ function setStatus(message, tone) {
   statusLine.dataset.tone = tone;
 }
 
-function setActionState(disabled) {
-  copySvgButton.disabled = disabled;
-  downloadSvgButton.disabled = disabled;
-  downloadPngButton.disabled = disabled;
-  bulkGenerateButton.disabled = disabled;
-  advancedBulkTemplateButton.disabled = disabled;
-  advancedBulkValidateButton.disabled = disabled;
-  advancedBulkGenerateButton.disabled = disabled;
+function setActionBusy(busy) {
+  actionBusy = busy;
+  refreshActionState();
+}
+
+function refreshActionState() {
+  const exportDisabled = actionBusy || !currentSvg;
+  copySvgButton.disabled = exportDisabled;
+  downloadSvgButton.disabled = exportDisabled;
+  downloadPngButton.disabled = exportDisabled;
+  bulkGenerateButton.disabled = actionBusy;
+  advancedBulkTemplateButton.disabled = actionBusy;
+  advancedBulkValidateButton.disabled = actionBusy;
+  advancedBulkGenerateButton.disabled = actionBusy;
 }
 
 function setBulkStatus(message, tone = "") {
@@ -1315,18 +1322,18 @@ function setAdvancedBulkProgress(value, max) {
 }
 
 async function runExportAction(action) {
-  setActionState(true);
+  setActionBusy(true);
   try {
     await action();
   } catch (error) {
     setStatus(error.message || "Export failed.", "error");
   } finally {
-    setActionState(!currentSvg);
+    setActionBusy(false);
   }
 }
 
 async function runBulkGeneration() {
-  setActionState(true);
+  setActionBusy(true);
   try {
     await generateBulkZip();
   } catch (error) {
@@ -1334,12 +1341,12 @@ async function runBulkGeneration() {
     setStatus(message, "error");
     setBulkStatus(message, "error");
   } finally {
-    setActionState(!currentSvg);
+    setActionBusy(false);
   }
 }
 
 async function runAdvancedBulkGeneration() {
-  setActionState(true);
+  setActionBusy(true);
   try {
     await generateAdvancedBulkZip();
   } catch (error) {
@@ -1349,7 +1356,7 @@ async function runAdvancedBulkGeneration() {
     setStatus("Advanced CSV bulk failed. See the CSV status for details.", "error");
     setAdvancedBulkStatus(message, "error");
   } finally {
-    setActionState(!currentSvg);
+    setActionBusy(false);
   }
 }
 
