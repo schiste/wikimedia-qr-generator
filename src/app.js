@@ -28,7 +28,6 @@ const form = document.querySelector("#qr-form");
 const appShell = document.querySelector("#app-shell");
 const appPicker = document.querySelector("#app-picker");
 const appPickerButton = document.querySelector("#app-picker-button");
-const appPickerMenu = document.querySelector("#app-picker-menu");
 const designsMenu = document.querySelector("#designs-menu");
 const designsMenuButton = document.querySelector("#designs-menu-button");
 const designsDropdown = document.querySelector("#designs-dropdown");
@@ -113,6 +112,21 @@ const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
 const TRASH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const CHECK_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const REFRESH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 0 1-15.3 6.4M3 12A9 9 0 0 1 18.3 5.6M18 2v4h-4M6 22v-4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const APP_PICKER_OPTIONS = [
+  {
+    id: "qr-generator",
+    name: "Wikimedia QR Generator",
+    description: "Client-side codes for movement links and campaign pages",
+    href: "/",
+    current: true
+  },
+  {
+    id: "wikiround",
+    name: "WikiRound Generator",
+    description: "Live Wikimedia logo clusters",
+    href: "https://logo-round-gen.toolforge.org/"
+  }
+];
 
 const QR_PRESETS = {
   article: {
@@ -181,6 +195,7 @@ let currentPngSize = 512;
 let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
 let appPickerOpen = false;
+let appPickerMenu = null;
 
 for (const element of [
   qrUrlInput,
@@ -281,8 +296,56 @@ setContentType("url");
 
 function setAppPickerOpen(open) {
   appPickerOpen = open;
-  appPickerMenu.classList.toggle("is-hidden", !open);
   appPickerButton.setAttribute("aria-expanded", String(open));
+
+  if (!open) {
+    appPickerMenu?.remove();
+    appPickerMenu = null;
+    return;
+  }
+
+  if (!appPickerMenu) {
+    appPickerMenu = renderAppPickerMenu();
+    appPicker.append(appPickerMenu);
+  }
+}
+
+function renderAppPickerMenu() {
+  const menu = document.createElement("div");
+  menu.className = "app-picker-menu";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "Wikimedia generator picker");
+
+  for (const option of APP_PICKER_OPTIONS) {
+    const link = document.createElement("a");
+    link.className = `app-picker-option${option.current ? " app-picker-option-current" : ""}`;
+    link.href = option.href;
+    link.setAttribute("role", "menuitem");
+    if (option.current) {
+      link.setAttribute("aria-current", "page");
+    }
+    link.addEventListener("click", () => setAppPickerOpen(false));
+
+    const title = document.createElement("span");
+    title.className = "app-picker-option-title";
+
+    const name = document.createElement("span");
+    name.textContent = option.name;
+    title.append(name);
+
+    if (option.current) {
+      title.insertAdjacentHTML("beforeend", CHECK_ICON);
+    }
+
+    const description = document.createElement("span");
+    description.className = "app-picker-option-description";
+    description.textContent = option.description;
+
+    link.append(title, description);
+    menu.append(link);
+  }
+
+  return menu;
 }
 
 function setTheme(nextTheme) {
