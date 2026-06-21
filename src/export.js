@@ -58,6 +58,15 @@ export function addPrintBleedToSvg(svg, options = {}) {
     .replace(/(<svg\b[^>]*>)/, `$1${bleedPath}`);
 }
 
+export function stripInkscapeDataFromSvg(svg) {
+  return String(svg)
+    .replace(/<metadata\b[\s\S]*?<\/metadata>/gi, "")
+    .replace(/<sodipodi:namedview\b[\s\S]*?<\/sodipodi:namedview>/gi, "")
+    .replace(/<sodipodi:namedview\b[^>]*\/>/gi, "")
+    .replace(/\s(?:inkscape|sodipodi):[A-Za-z_][\w:.-]*=(?:"[^"]*"|'[^']*')/gi, "")
+    .replace(/\sxmlns:(?:inkscape|sodipodi|rdf|dc|cc)=(?:"[^"]*"|'[^']*')/gi, "");
+}
+
 export function addInkscapeDataToSvg(svg, options = {}) {
   if (!options.enabled) {
     return svg;

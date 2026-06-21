@@ -1,6 +1,11 @@
 import { createQrCode } from "./qr.js";
 import { bulkQrFileName, parseBulkUrlList } from "./bulk.js";
-import { addInkscapeDataToSvg, addPrintBleedToSvg, getExportPixelSize } from "./export.js";
+import {
+  addInkscapeDataToSvg,
+  addPrintBleedToSvg,
+  getExportPixelSize,
+  stripInkscapeDataFromSvg
+} from "./export.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
 import { createZipBlob } from "./zip.js";
 import {
@@ -1145,7 +1150,7 @@ function downloadSvg() {
 
 async function downloadPng(size = currentPngSize) {
   const dimensions = getExportPixelSize(size, printBleedInput.checked);
-  const blob = await createPngBlob(getExportSvg(), dimensions.total);
+  const blob = await createPngBlob(getRasterSvg(), dimensions.total);
 
   downloadBlob(`${fileBaseName()}${fileExportSuffix()}.png`, blob);
   setStatus(`PNG downloaded at ${dimensions.total} x ${dimensions.total}.`, "success");
@@ -1160,10 +1165,7 @@ async function generateBulkZip() {
   setBulkStatus(`Validated ${urls.length} URL${urls.length === 1 ? "" : "s"}.`, "success");
 
   for (const [index, url] of urls.entries()) {
-    const svg = addPrintBleedToSvg(createStyledQrSvg(url).svg, {
-      background: backgroundInput.value,
-      enabled: printBleedInput.checked
-    });
+    const svg = getRasterSvg(createStyledQrSvg(url).svg);
     const blob = await createPngBlob(svg, dimensions.total);
     files.push({
       name: bulkQrFileName(url, index, { suffix }),
@@ -1245,16 +1247,20 @@ function downloadBlob(filename, blob) {
 }
 
 function getExportSvg() {
-  const svg = addPrintBleedToSvg(currentSvg, {
-    background: backgroundInput.value,
-    enabled: printBleedInput.checked
-  });
-
-  return addInkscapeDataToSvg(svg, {
+  return addInkscapeDataToSvg(getRasterSvg(), {
     documentName: svgFileName(),
     enabled: inkscapeSvgInput.checked,
     title: "Wikimedia QR code"
   });
+}
+
+function getRasterSvg(svg = currentSvg) {
+  const svgWithBleed = addPrintBleedToSvg(svg, {
+    background: backgroundInput.value,
+    enabled: printBleedInput.checked
+  });
+
+  return stripInkscapeDataFromSvg(svgWithBleed);
 }
 
 function svgFileName() {

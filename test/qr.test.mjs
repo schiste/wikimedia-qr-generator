@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
-import { addInkscapeDataToSvg, addPrintBleedToSvg, getExportPixelSize } from "../src/export.js";
+import {
+  addInkscapeDataToSvg,
+  addPrintBleedToSvg,
+  getExportPixelSize,
+  stripInkscapeDataFromSvg
+} from "../src/export.js";
 import { getLogoLibraryPreviewUrl, LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
 import { createQrCode } from "../src/qr.js";
 import { buildWikimediaUrl, normalizeDirectUrl } from "../src/wikimedia.js";
@@ -126,6 +131,23 @@ test("adds optional Inkscape document data to exported SVGs", () => {
   assert.match(withInkscapeData, /<sodipodi:namedview id="wikimedia-qr-inkscape-view"/);
   assert.equal(addInkscapeDataToSvg(withInkscapeData, { enabled: true }), withInkscapeData);
   assert.equal(addInkscapeDataToSvg(svg, { enabled: false }), svg);
+});
+
+test("strips Inkscape and Sodipodi data from default SVG exports", () => {
+  const svg = [
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" viewBox="0 0 100 100" sodipodi:docname="draft.svg" inkscape:version="1.3">',
+    '<metadata><rdf:RDF><cc:Work xmlns:cc="http://creativecommons.org/ns#"/></rdf:RDF></metadata>',
+    '<sodipodi:namedview id="namedview1" inkscape:pageopacity="0"/>',
+    '<path fill="#fff" inkscape:connector-curvature="0" d="M0 0h100v100H0z"/>',
+    "</svg>"
+  ].join("");
+  const cleaned = stripInkscapeDataFromSvg(svg);
+
+  assert.doesNotMatch(cleaned, /inkscape[:=]/i);
+  assert.doesNotMatch(cleaned, /sodipodi[:=]/i);
+  assert.doesNotMatch(cleaned, /<metadata/i);
+  assert.doesNotMatch(cleaned, /xmlns:rdf=/i);
+  assert.match(cleaned, /<path fill="#fff" d="M0 0h100v100H0z"\/>/);
 });
 
 test("computes export pixel size with print bleed", () => {

@@ -107,6 +107,7 @@ function sanitizeSvgMarkup(svgString) {
   }
 
   root.querySelectorAll("script, foreignObject, iframe, object, embed, link").forEach((node) => node.remove());
+  root.querySelectorAll("metadata, sodipodi\\:namedview, inkscape\\:perspective").forEach((node) => node.remove());
 
   [root, ...root.querySelectorAll("*")].forEach((node) => {
     for (const attr of [...node.attributes]) {
@@ -127,6 +128,12 @@ function sanitizeSvgMarkup(svgString) {
         value.startsWith("javascript:") ||
         isUnsafeStyle ||
         (isUrlAttribute && (isExternalUrl || isUnsafeDataUrl))
+      ) {
+        node.removeAttribute(attr.name);
+      } else if (
+        name.startsWith("inkscape:") ||
+        name.startsWith("sodipodi:") ||
+        ["xmlns:inkscape", "xmlns:sodipodi", "xmlns:rdf", "xmlns:dc", "xmlns:cc"].includes(name)
       ) {
         node.removeAttribute(attr.name);
       }
