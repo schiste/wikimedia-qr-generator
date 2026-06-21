@@ -1,6 +1,7 @@
 import { createQrCode } from "./qr.js";
 import { bulkQrFileName, parseBulkUrlList } from "./bulk.js";
 import {
+  addCaptionsToSvg,
   addInkscapeDataToSvg,
   addPrintBleedToSvg,
   getExportPixelSize,
@@ -60,6 +61,11 @@ const sizeInput = document.querySelector("#size");
 const foregroundInput = document.querySelector("#foreground");
 const foregroundSecondaryInput = document.querySelector("#foreground-secondary");
 const backgroundInput = document.querySelector("#background");
+const captionTopInput = document.querySelector("#caption-top");
+const captionBottomInput = document.querySelector("#caption-bottom");
+const captionSizeInput = document.querySelector("#caption-size");
+const captionWeightInput = document.querySelector("#caption-weight");
+const captionColorInput = document.querySelector("#caption-color");
 const accentColorField = document.querySelector("#accent-color-field");
 const presetButtons = document.querySelectorAll("[data-preset]");
 const colorButtons = document.querySelectorAll("[data-color-target]");
@@ -188,6 +194,11 @@ for (const element of [
   foregroundInput,
   foregroundSecondaryInput,
   backgroundInput,
+  captionTopInput,
+  captionBottomInput,
+  captionSizeInput,
+  captionWeightInput,
+  captionColorInput,
   logoSizeInput
 ]) {
   element.addEventListener("input", render);
@@ -284,13 +295,14 @@ function render() {
 
     const content = compileContentPayload();
     const qrAsset = createStyledQrSvg(content.payload);
+    const previewSvg = getCaptionedSvg(qrAsset.svg);
     const previewSize = Number(sizeInput.value);
     currentPngSize = previewSize;
     currentUrl = content.payload;
     currentSvg = qrAsset.svg;
 
     qrStage.style.setProperty("--qr-preview-size", `${previewSize}px`);
-    qrStage.innerHTML = currentSvg;
+    qrStage.innerHTML = previewSvg;
     targetUrlOutput.value = content.label;
     qrMetaOutput.value = `v${qrAsset.qr.version} / ${qrAsset.qr.size} modules / EC ${qrAsset.qr.errorCorrection}`;
 
@@ -894,6 +906,11 @@ function getDesignConfig() {
     foreground: foregroundInput.value,
     foregroundSecondary: foregroundSecondaryInput.value,
     background: backgroundInput.value,
+    captionTop: captionTopInput.value,
+    captionBottom: captionBottomInput.value,
+    captionSize: captionSizeInput.value,
+    captionWeight: captionWeightInput.value,
+    captionColor: captionColorInput.value,
     logo: selectedLogo,
     logoSize: logoSizeInput.value,
     exportSize: exportSizeInput.value,
@@ -925,6 +942,11 @@ function applyDesignConfig(config) {
   foregroundInput.value = normalized.foreground;
   foregroundSecondaryInput.value = normalized.foregroundSecondary;
   backgroundInput.value = normalized.background;
+  captionTopInput.value = normalized.captionTop;
+  captionBottomInput.value = normalized.captionBottom;
+  captionSizeInput.value = normalized.captionSize;
+  captionWeightInput.value = normalized.captionWeight;
+  captionColorInput.value = normalized.captionColor;
   selectedLogo = normalized.logo;
   ensureLogoOption(selectedLogo);
   logoSelect.value = selectedLogo;
@@ -969,6 +991,11 @@ function normalizeDesignConfig(config) {
     foreground: colorValue(source.foreground, fallback.foreground),
     foregroundSecondary: colorValue(source.foregroundSecondary, fallback.foregroundSecondary),
     background: colorValue(source.background, fallback.background),
+    captionTop: stringValue(source.captionTop, fallback.captionTop),
+    captionBottom: stringValue(source.captionBottom, fallback.captionBottom),
+    captionSize: rangeValue(captionSizeInput, source.captionSize, fallback.captionSize),
+    captionWeight: optionValue(captionWeightInput, source.captionWeight, fallback.captionWeight),
+    captionColor: colorValue(source.captionColor, fallback.captionColor),
     logo: normalizeLogoId(source.logo, fallback.logo),
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
     exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize),
@@ -1255,12 +1282,28 @@ function getExportSvg() {
 }
 
 function getRasterSvg(svg = currentSvg) {
-  const svgWithBleed = addPrintBleedToSvg(svg, {
+  const captionedSvg = getCaptionedSvg(svg);
+  const svgWithBleed = addPrintBleedToSvg(captionedSvg, {
     background: backgroundInput.value,
     enabled: printBleedInput.checked
   });
 
   return stripInkscapeDataFromSvg(svgWithBleed);
+}
+
+function getCaptionedSvg(svg) {
+  return addCaptionsToSvg(svg, getCaptionOptions());
+}
+
+function getCaptionOptions() {
+  return {
+    background: backgroundInput.value,
+    bottomText: captionBottomInput.value,
+    color: captionColorInput.value,
+    fontSizePercent: Number(captionSizeInput.value),
+    fontWeight: captionWeightInput.value,
+    topText: captionTopInput.value
+  };
 }
 
 function svgFileName() {

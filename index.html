@@ -380,6 +380,47 @@
                 </label>
               </div>
             </section>
+
+            <section class="control-section" aria-labelledby="caption-heading">
+              <div class="section-heading">
+                <div class="section-title">
+                  <span class="status-dot status-dot-green" aria-hidden="true"></span>
+                  <h2 id="caption-heading">6. Captions</h2>
+                </div>
+                <span class="section-meta">Text</span>
+              </div>
+
+              <div class="options-grid" aria-label="QR caption options">
+                <label class="field field--wide">
+                  <span>Text above QR</span>
+                  <input id="caption-top" type="text" maxlength="120" placeholder="Scan to join Wikimania">
+                </label>
+
+                <label class="field field--wide">
+                  <span>Text below QR</span>
+                  <input id="caption-bottom" type="text" maxlength="120" placeholder="wikimedia.org">
+                </label>
+
+                <label class="field">
+                  <span>Text size</span>
+                  <input id="caption-size" type="range" min="4" max="12" value="6">
+                </label>
+
+                <label class="field">
+                  <span>Text weight</span>
+                  <select id="caption-weight">
+                    <option value="400">Regular</option>
+                    <option value="600" selected>Semibold</option>
+                    <option value="700">Bold</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Text color</span>
+                  <input id="caption-color" type="color" value="#202122">
+                </label>
+              </div>
+            </section>
           </form>
         </aside>
 

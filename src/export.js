@@ -58,6 +58,73 @@ export function addPrintBleedToSvg(svg, options = {}) {
     .replace(/(<svg\b[^>]*>)/, `$1${bleedPath}`);
 }
 
+export function addCaptionsToSvg(svg, options = {}) {
+  const topText = normalizeCaptionText(options.topText);
+  const bottomText = normalizeCaptionText(options.bottomText);
+  if (!topText && !bottomText) {
+    return svg;
+  }
+
+  const svgString = String(svg);
+  const rootMatch = svgString.match(/<svg\b[^>]*>/);
+  const closeIndex = svgString.lastIndexOf("</svg>");
+  if (!rootMatch || closeIndex === -1) {
+    return svg;
+  }
+
+  const viewBoxMatch = rootMatch[0].match(/\bviewBox="([^"]+)"/);
+  const viewBox = viewBoxMatch ? parseViewBox(viewBoxMatch[1]) : null;
+  if (!viewBox) {
+    return svg;
+  }
+
+  const fontSize = viewBox.width * normalizeCaptionSizePercent(options.fontSizePercent) / 100;
+  const topBand = topText ? fontSize * 2 : 0;
+  const bottomBand = bottomText ? fontSize * 2 : 0;
+  const availableHeight = Math.max(viewBox.height * 0.5, viewBox.height - topBand - bottomBand);
+  const qrSize = Math.min(viewBox.width, availableHeight);
+  const qrScale = qrSize / Math.max(viewBox.width, viewBox.height);
+  const qrX = viewBox.x + (viewBox.width - viewBox.width * qrScale) / 2;
+  const qrY = viewBox.y + topBand + (availableHeight - viewBox.height * qrScale) / 2;
+  const centerX = viewBox.x + viewBox.width / 2;
+  const maxTextWidth = viewBox.width * 0.9;
+  const background = escapeAttribute(options.background || "#ffffff");
+  const color = escapeAttribute(options.color || "#202122");
+  const weight = normalizeCaptionWeight(options.fontWeight);
+  const inner = svgString.slice(rootMatch.index + rootMatch[0].length, closeIndex);
+  const outerRoot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formatViewBox(viewBox)}" role="img" aria-label="QR code with captions">`;
+  const qrLayer = [
+    `<g transform="translate(${formatNumber(qrX)} ${formatNumber(qrY)}) scale(${formatNumber(qrScale)})" shape-rendering="crispEdges">`,
+    viewBox.x || viewBox.y ? `<g transform="translate(${formatNumber(-viewBox.x)} ${formatNumber(-viewBox.y)})">` : "",
+    inner,
+    viewBox.x || viewBox.y ? "</g>" : "",
+    "</g>"
+  ].join("");
+
+  return [
+    outerRoot,
+    `<path fill="${background}" d="M${formatNumber(viewBox.x)} ${formatNumber(viewBox.y)}h${formatNumber(viewBox.width)}v${formatNumber(viewBox.height)}H${formatNumber(viewBox.x)}z"/>`,
+    topText ? renderCaptionText(topText, {
+      color,
+      fontSize,
+      maxTextWidth,
+      weight,
+      x: centerX,
+      y: viewBox.y + topBand / 2
+    }) : "",
+    qrLayer,
+    bottomText ? renderCaptionText(bottomText, {
+      color,
+      fontSize,
+      maxTextWidth,
+      weight,
+      x: centerX,
+      y: viewBox.y + viewBox.height - bottomBand / 2
+    }) : "",
+    "</svg>"
+  ].filter(Boolean).join("");
+}
+
 export function stripInkscapeDataFromSvg(svg) {
   return String(svg)
     .replace(/<metadata\b[\s\S]*?<\/metadata>/gi, "")
@@ -134,6 +201,15 @@ function parseViewBox(value) {
   };
 }
 
+function formatViewBox(viewBox) {
+  return [
+    viewBox.x,
+    viewBox.y,
+    viewBox.width,
+    viewBox.height
+  ].map(formatNumber).join(" ");
+}
+
 function formatNumber(value) {
   return Number.parseFloat(value.toFixed(3));
 }
@@ -155,6 +231,36 @@ function escapeText(value) {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+}
+
+function normalizeCaptionText(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ").slice(0, 120);
+}
+
+function normalizeCaptionSizePercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return 6;
+  }
+  return Math.min(12, Math.max(4, number));
+}
+
+function normalizeCaptionWeight(value) {
+  const weight = String(value ?? "");
+  return ["400", "600", "700"].includes(weight) ? weight : "600";
+}
+
+function renderCaptionText(text, options) {
+  const fitAttributes = getCaptionFitAttributes(text, options.fontSize, options.maxTextWidth);
+  return `<text x="${formatNumber(options.x)}" y="${formatNumber(options.y)}" fill="${options.color}" font-family="Arial, Helvetica, sans-serif" font-size="${formatNumber(options.fontSize)}" font-weight="${options.weight}" text-anchor="middle" dominant-baseline="middle"${fitAttributes}>${escapeText(text)}</text>`;
+}
+
+function getCaptionFitAttributes(text, fontSize, maxWidth) {
+  const estimatedWidth = text.length * fontSize * 0.56;
+  if (estimatedWidth <= maxWidth) {
+    return "";
+  }
+  return ` textLength="${formatNumber(maxWidth)}" lengthAdjust="spacingAndGlyphs"`;
 }
 
 function addSvgRootAttributes(rootTag, attributes) {

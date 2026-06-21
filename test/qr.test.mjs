@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
 import {
+  addCaptionsToSvg,
   addInkscapeDataToSvg,
   addPrintBleedToSvg,
   getExportPixelSize,
@@ -113,6 +114,35 @@ test("adds print bleed to exported SVGs", () => {
   assert.match(withBleed, /viewBox="-5 -5 110 110"/);
   assert.match(withBleed, /<path fill="#f8fafc" d="M-5 -5h110v110H-5z"\/>/);
   assert.equal(addPrintBleedToSvg(svg, { enabled: false }), svg);
+});
+
+test("adds optional captions above and below QR SVGs", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="QR code"><path fill="#fff" d="M0 0h100v100H0z"/><path fill="#202122" d="M10 10h10v10H10z"/></svg>';
+  const captioned = addCaptionsToSvg(svg, {
+    background: "#f8fafc",
+    bottomText: "wikimedia.org",
+    color: "#970302",
+    fontSizePercent: 8,
+    fontWeight: "700",
+    topText: "Scan & learn"
+  });
+
+  assert.match(captioned, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 100 100"/);
+  assert.match(captioned, /<path fill="#f8fafc" d="M0 0h100v100H0z"\/>/);
+  assert.match(captioned, /<text[^>]+fill="#970302"[^>]+font-size="8"[^>]+font-weight="700"[^>]*>Scan &amp; learn<\/text>/);
+  assert.match(captioned, /<text[^>]*>wikimedia\.org<\/text>/);
+  assert.match(captioned, /transform="translate\(16 16\) scale\(0\.68\)"/);
+  assert.equal(addCaptionsToSvg(svg, { topText: "", bottomText: "" }), svg);
+});
+
+test("fits long caption text inside the square SVG artwork", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/></svg>';
+  const captioned = addCaptionsToSvg(svg, {
+    topText: "This is a deliberately long Wikimedia campaign caption for testing",
+    fontSizePercent: 10
+  });
+
+  assert.match(captioned, /textLength="90" lengthAdjust="spacingAndGlyphs"/);
 });
 
 test("adds optional Inkscape document data to exported SVGs", () => {
