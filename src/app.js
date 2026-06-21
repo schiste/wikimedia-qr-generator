@@ -1,6 +1,6 @@
 import { createQrCode } from "./qr.js";
 import { bulkQrFileName, parseBulkUrlList } from "./bulk.js";
-import { addPrintBleedToSvg, getExportPixelSize } from "./export.js";
+import { addInkscapeDataToSvg, addPrintBleedToSvg, getExportPixelSize } from "./export.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
 import { createZipBlob } from "./zip.js";
 import {
@@ -80,6 +80,7 @@ const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
 const exportSizeInput = document.querySelector("#export-size");
 const printBleedInput = document.querySelector("#print-bleed");
+const inkscapeSvgInput = document.querySelector("#inkscape-svg");
 const copySvgButton = document.querySelector("#copy-svg");
 const downloadSvgButton = document.querySelector("#download-svg");
 const downloadPngButton = document.querySelector("#download-png");
@@ -214,6 +215,7 @@ logoLibrarySearchInput.addEventListener("input", () => {
   renderLogoLibrary();
 });
 printBleedInput.addEventListener("change", render);
+inkscapeSvgInput.addEventListener("change", render);
 copySvgButton.addEventListener("click", () => runExportAction(copySvg));
 downloadSvgButton.addEventListener("click", () => runExportAction(downloadSvg));
 downloadPngButton.addEventListener("click", () => runExportAction(() => downloadPng(Number(exportSizeInput.value))));
@@ -890,7 +892,8 @@ function getDesignConfig() {
     logo: selectedLogo,
     logoSize: logoSizeInput.value,
     exportSize: exportSizeInput.value,
-    printBleed: printBleedInput.checked
+    printBleed: printBleedInput.checked,
+    inkscapeSvg: inkscapeSvgInput.checked
   };
 }
 
@@ -924,6 +927,7 @@ function applyDesignConfig(config) {
   logoSizeInput.value = normalized.logoSize;
   exportSizeInput.value = normalized.exportSize;
   printBleedInput.checked = normalized.printBleed;
+  inkscapeSvgInput.checked = normalized.inkscapeSvg;
 
   for (const button of presetButtons) {
     button.classList.remove("is-active");
@@ -963,7 +967,8 @@ function normalizeDesignConfig(config) {
     logo: normalizeLogoId(source.logo, fallback.logo),
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
     exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize),
-    printBleed: booleanValue(source.printBleed, fallback.printBleed)
+    printBleed: booleanValue(source.printBleed, fallback.printBleed),
+    inkscapeSvg: booleanValue(source.inkscapeSvg, fallback.inkscapeSvg)
   };
 }
 
@@ -1134,7 +1139,7 @@ async function runBulkGeneration() {
 }
 
 function downloadSvg() {
-  downloadBlob(`${fileBaseName()}${fileExportSuffix()}.svg`, new Blob([getExportSvg()], { type: "image/svg+xml" }));
+  downloadBlob(svgFileName(), new Blob([getExportSvg()], { type: "image/svg+xml" }));
   setStatus("SVG downloaded.", "success");
 }
 
@@ -1240,14 +1245,31 @@ function downloadBlob(filename, blob) {
 }
 
 function getExportSvg() {
-  return addPrintBleedToSvg(currentSvg, {
+  const svg = addPrintBleedToSvg(currentSvg, {
     background: backgroundInput.value,
     enabled: printBleedInput.checked
   });
+
+  return addInkscapeDataToSvg(svg, {
+    documentName: svgFileName(),
+    enabled: inkscapeSvgInput.checked,
+    title: "Wikimedia QR code"
+  });
 }
 
-function fileExportSuffix() {
-  return printBleedInput.checked ? "-bleed" : "";
+function svgFileName() {
+  return `${fileBaseName()}${fileExportSuffix({ includeInkscape: true })}.svg`;
+}
+
+function fileExportSuffix({ includeInkscape = false } = {}) {
+  const parts = [];
+  if (printBleedInput.checked) {
+    parts.push("bleed");
+  }
+  if (includeInkscape && inkscapeSvgInput.checked) {
+    parts.push("inkscape");
+  }
+  return parts.length ? `-${parts.join("-")}` : "";
 }
 
 function fileBaseName() {

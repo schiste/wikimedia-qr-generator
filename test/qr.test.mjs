@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CENTER_LOGO_IDS, WIKIMEDIA_LOGOS } from "../src/logos.js";
-import { addPrintBleedToSvg, getExportPixelSize } from "../src/export.js";
+import { addInkscapeDataToSvg, addPrintBleedToSvg, getExportPixelSize } from "../src/export.js";
 import { getLogoLibraryPreviewUrl, LOGO_LIBRARY_ENTRIES } from "../src/logoLibrary.js";
 import { createQrCode } from "../src/qr.js";
 import { buildWikimediaUrl, normalizeDirectUrl } from "../src/wikimedia.js";
@@ -108,6 +108,24 @@ test("adds print bleed to exported SVGs", () => {
   assert.match(withBleed, /viewBox="-5 -5 110 110"/);
   assert.match(withBleed, /<path fill="#f8fafc" d="M-5 -5h110v110H-5z"\/>/);
   assert.equal(addPrintBleedToSvg(svg, { enabled: false }), svg);
+});
+
+test("adds optional Inkscape document data to exported SVGs", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/></svg>';
+  const withInkscapeData = addInkscapeDataToSvg(svg, {
+    documentName: 'qr "draft".svg',
+    enabled: true,
+    title: "Wikimedia & QR"
+  });
+
+  assert.match(withInkscapeData, /xmlns:inkscape="http:\/\/www\.inkscape\.org\/namespaces\/inkscape"/);
+  assert.match(withInkscapeData, /xmlns:sodipodi="http:\/\/sodipodi\.sourceforge\.net\/DTD\/sodipodi-0\.dtd"/);
+  assert.match(withInkscapeData, /sodipodi:docname="qr &quot;draft&quot;\.svg"/);
+  assert.match(withInkscapeData, /<metadata id="wikimedia-qr-inkscape-metadata">/);
+  assert.match(withInkscapeData, /<dc:title>Wikimedia &amp; QR<\/dc:title>/);
+  assert.match(withInkscapeData, /<sodipodi:namedview id="wikimedia-qr-inkscape-view"/);
+  assert.equal(addInkscapeDataToSvg(withInkscapeData, { enabled: true }), withInkscapeData);
+  assert.equal(addInkscapeDataToSvg(svg, { enabled: false }), svg);
 });
 
 test("computes export pixel size with print bleed", () => {
