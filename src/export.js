@@ -103,7 +103,11 @@ export function addCaptionsToSvg(svg, options = {}) {
   const qrHeight = viewBox.height * qrScale;
   const qrX = viewBox.x + (viewBox.width - qrWidth) / 2;
   const qrY = viewBox.y + cornerInset + topBand + (availableHeight - qrHeight) / 2;
-  const qrBottom = qrY + qrHeight;
+  const contentBounds = getSvgVisibleBounds(svgString, viewBox);
+  const visibleQrTop = qrY + (contentBounds.y - viewBox.y) * qrScale;
+  const visibleQrBottom = qrY + (contentBounds.y + contentBounds.height - viewBox.y) * qrScale;
+  const pageTop = viewBox.y + (cornersEnabled ? getCornerMarkerInset(viewBox) : 0);
+  const pageBottom = viewBox.y + viewBox.height - (cornersEnabled ? getCornerMarkerInset(viewBox) : 0);
   const centerX = viewBox.x + viewBox.width / 2;
   const maxTextWidth = availableWidth * 0.94;
   const background = escapeAttribute(options.background || "#ffffff");
@@ -133,7 +137,7 @@ export function addCaptionsToSvg(svg, options = {}) {
       maxTextWidth,
       weight,
       x: centerX,
-      y: (viewBox.y + qrY) / 2
+      y: (pageTop + visibleQrTop) / 2
     }) : "",
     qrLayer,
     bottomText ? renderCaptionText(bottomText, {
@@ -143,7 +147,7 @@ export function addCaptionsToSvg(svg, options = {}) {
       maxTextWidth,
       weight,
       x: centerX,
-      y: (qrBottom + viewBox.y + viewBox.height) / 2
+      y: (visibleQrBottom + pageBottom) / 2
     }) : "",
     cornerLayer,
     "</svg>"
@@ -307,8 +311,8 @@ function renderPageCorners(viewBox, options) {
     ? "url(#qr-page-corners-gradient)"
     : escapeAttribute(options.cornerColor || "#202122");
   const style = options.cornerStyle === "rounded" ? "rounded" : "right";
-  const strokeWidth = Math.max(0.8, viewBox.width * 0.012);
-  const inset = strokeWidth * 2;
+  const strokeWidth = getCornerStrokeWidth(viewBox);
+  const inset = getCornerMarkerInset(viewBox);
   const length = viewBox.width * 0.12;
   const radius = length * 0.32;
   const paths = style === "rounded"
@@ -316,6 +320,226 @@ function renderPageCorners(viewBox, options) {
     : renderRightCornerPaths(viewBox, inset, length);
   const lineJoin = style === "rounded" ? "round" : "miter";
   return `<g class="page-corners" fill="none" stroke="${stroke}" stroke-width="${formatNumber(strokeWidth)}" stroke-linecap="round" stroke-linejoin="${lineJoin}">${paths}</g>`;
+}
+
+function getSvgVisibleBounds(svgString, viewBox) {
+  let bounds = null;
+  for (const match of svgString.matchAll(/<(path|rect|circle|ellipse|svg)\b[^>]*>/gi)) {
+    const [, tagName] = match;
+    if (match.index === 0 && tagName.toLowerCase() === "svg") {
+      continue;
+    }
+
+    const elementBounds = getSvgElementBounds(tagName.toLowerCase(), match[0]);
+    if (!elementBounds || isFullViewBoxBounds(elementBounds, viewBox)) {
+      continue;
+    }
+    bounds = mergeBounds(bounds, elementBounds);
+  }
+  return bounds || viewBox;
+}
+
+function getSvgElementBounds(tagName, tag) {
+  if (tagName === "path") {
+    const d = getSvgAttribute(tag, "d");
+    return d ? parsePathBounds(d) : null;
+  }
+  if (tagName === "rect" || tagName === "svg") {
+    const x = parseSvgNumber(getSvgAttribute(tag, "x"), 0);
+    const y = parseSvgNumber(getSvgAttribute(tag, "y"), 0);
+    const width = parseSvgNumber(getSvgAttribute(tag, "width"), 0);
+    const height = parseSvgNumber(getSvgAttribute(tag, "height"), 0);
+    return width > 0 && height > 0 ? { x, y, width, height } : null;
+  }
+  if (tagName === "circle") {
+    const cx = parseSvgNumber(getSvgAttribute(tag, "cx"), 0);
+    const cy = parseSvgNumber(getSvgAttribute(tag, "cy"), 0);
+    const r = parseSvgNumber(getSvgAttribute(tag, "r"), 0);
+    return r > 0 ? { x: cx - r, y: cy - r, width: r * 2, height: r * 2 } : null;
+  }
+  if (tagName === "ellipse") {
+    const cx = parseSvgNumber(getSvgAttribute(tag, "cx"), 0);
+    const cy = parseSvgNumber(getSvgAttribute(tag, "cy"), 0);
+    const rx = parseSvgNumber(getSvgAttribute(tag, "rx"), 0);
+    const ry = parseSvgNumber(getSvgAttribute(tag, "ry"), 0);
+    return rx > 0 && ry > 0 ? { x: cx - rx, y: cy - ry, width: rx * 2, height: ry * 2 } : null;
+  }
+  return null;
+}
+
+function parsePathBounds(pathData) {
+  const tokens = String(pathData).match(/[a-zA-Z]|[-+]?(?:\d*\.)?\d+(?:e[-+]?\d+)?/gi) || [];
+  let index = 0;
+  let command = "";
+  let x = 0;
+  let y = 0;
+  let startX = 0;
+  let startY = 0;
+  let bounds = null;
+
+  const isCommand = (token) => /^[a-zA-Z]$/.test(token);
+  const hasNumber = () => index < tokens.length && !isCommand(tokens[index]);
+  const nextNumber = () => Number(tokens[index++]);
+  const addPoint = (pointX, pointY) => {
+    if (!Number.isFinite(pointX) || !Number.isFinite(pointY)) {
+      return;
+    }
+    bounds = mergeBounds(bounds, { x: pointX, y: pointY, width: 0, height: 0 });
+  };
+
+  while (index < tokens.length) {
+    if (isCommand(tokens[index])) {
+      command = tokens[index++];
+    }
+
+    const relative = command === command.toLowerCase();
+    switch (command.toLowerCase()) {
+      case "m": {
+        let firstPoint = true;
+        while (hasNumber() && index + 1 < tokens.length) {
+          const nextX = nextNumber();
+          const nextY = nextNumber();
+          x = relative ? x + nextX : nextX;
+          y = relative ? y + nextY : nextY;
+          if (firstPoint) {
+            startX = x;
+            startY = y;
+            firstPoint = false;
+          }
+          addPoint(x, y);
+        }
+        break;
+      }
+      case "l":
+      case "t": {
+        while (hasNumber() && index + 1 < tokens.length) {
+          const nextX = nextNumber();
+          const nextY = nextNumber();
+          x = relative ? x + nextX : nextX;
+          y = relative ? y + nextY : nextY;
+          addPoint(x, y);
+        }
+        break;
+      }
+      case "h": {
+        while (hasNumber()) {
+          const nextX = nextNumber();
+          x = relative ? x + nextX : nextX;
+          addPoint(x, y);
+        }
+        break;
+      }
+      case "v": {
+        while (hasNumber()) {
+          const nextY = nextNumber();
+          y = relative ? y + nextY : nextY;
+          addPoint(x, y);
+        }
+        break;
+      }
+      case "c": {
+        while (hasNumber() && index + 5 < tokens.length) {
+          for (let point = 0; point < 3; point += 1) {
+            const nextX = nextNumber();
+            const nextY = nextNumber();
+            const pointX = relative ? x + nextX : nextX;
+            const pointY = relative ? y + nextY : nextY;
+            addPoint(pointX, pointY);
+            if (point === 2) {
+              x = pointX;
+              y = pointY;
+            }
+          }
+        }
+        break;
+      }
+      case "s":
+      case "q": {
+        while (hasNumber() && index + 3 < tokens.length) {
+          for (let point = 0; point < 2; point += 1) {
+            const nextX = nextNumber();
+            const nextY = nextNumber();
+            const pointX = relative ? x + nextX : nextX;
+            const pointY = relative ? y + nextY : nextY;
+            addPoint(pointX, pointY);
+            if (point === 1) {
+              x = pointX;
+              y = pointY;
+            }
+          }
+        }
+        break;
+      }
+      case "a": {
+        while (hasNumber() && index + 6 < tokens.length) {
+          index += 5;
+          const nextX = nextNumber();
+          const nextY = nextNumber();
+          x = relative ? x + nextX : nextX;
+          y = relative ? y + nextY : nextY;
+          addPoint(x, y);
+        }
+        break;
+      }
+      case "z": {
+        x = startX;
+        y = startY;
+        addPoint(x, y);
+        break;
+      }
+      default:
+        index += 1;
+    }
+  }
+
+  return bounds;
+}
+
+function mergeBounds(current, next) {
+  if (!next) {
+    return current;
+  }
+  if (!current) {
+    return next;
+  }
+  const minX = Math.min(current.x, next.x);
+  const minY = Math.min(current.y, next.y);
+  const maxX = Math.max(current.x + current.width, next.x + next.width);
+  const maxY = Math.max(current.y + current.height, next.y + next.height);
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY
+  };
+}
+
+function isFullViewBoxBounds(bounds, viewBox) {
+  const tolerance = 0.001;
+  return (
+    Math.abs(bounds.x - viewBox.x) <= tolerance &&
+    Math.abs(bounds.y - viewBox.y) <= tolerance &&
+    Math.abs(bounds.width - viewBox.width) <= tolerance &&
+    Math.abs(bounds.height - viewBox.height) <= tolerance
+  );
+}
+
+function getSvgAttribute(tag, name) {
+  const match = tag.match(new RegExp(`\\s${escapeRegExp(name)}=(?:"([^"]*)"|'([^']*)')`, "i"));
+  return match ? match[1] ?? match[2] : "";
+}
+
+function parseSvgNumber(value, fallback) {
+  const number = Number.parseFloat(String(value ?? ""));
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function getCornerStrokeWidth(viewBox) {
+  return Math.max(0.8, viewBox.width * 0.012);
+}
+
+function getCornerMarkerInset(viewBox) {
+  return getCornerStrokeWidth(viewBox) * 2;
 }
 
 function renderRightCornerPaths(viewBox, inset, length) {

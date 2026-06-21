@@ -117,7 +117,7 @@ test("adds print bleed to exported SVGs", () => {
 });
 
 test("adds optional captions above and below QR SVGs", () => {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="QR code"><path fill="#fff" d="M0 0h100v100H0z"/><path fill="#202122" d="M10 10h10v10H10z"/></svg>';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="QR code"><path fill="#fff" d="M0 0h100v100H0z"/><path fill="#202122" d="M10 10h80v80H10z"/></svg>';
   const captioned = addCaptionsToSvg(svg, {
     background: "#f8fafc",
     bottomText: "wikimedia.org",
@@ -129,10 +129,21 @@ test("adds optional captions above and below QR SVGs", () => {
 
   assert.match(captioned, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 100 100"/);
   assert.match(captioned, /<path fill="#f8fafc" d="M0 0h100v100H0z"\/>/);
-  assert.match(captioned, /<text[^>]+fill="#970302"[^>]+font-size="8"[^>]+font-weight="700"[^>]*>Scan &amp; learn<\/text>/);
-  assert.match(captioned, /<text[^>]*>wikimedia\.org<\/text>/);
+  assert.match(captioned, /<text x="50" y="11\.4" fill="#970302"[^>]+font-size="8"[^>]+font-weight="700"[^>]*>Scan &amp; learn<\/text>/);
+  assert.match(captioned, /<text x="50" y="88\.6"[^>]*>wikimedia\.org<\/text>/);
   assert.match(captioned, /transform="translate\(16 16\) scale\(0\.68\)"/);
   assert.equal(addCaptionsToSvg(svg, { topText: "", bottomText: "" }), svg);
+});
+
+test("centers captions between page corners and visible QR modules", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/><path fill="#202122" d="M10 10h80v80H10z"/></svg>';
+  const captioned = addCaptionsToSvg(svg, {
+    cornersEnabled: true,
+    topText: "Scan"
+  });
+
+  assert.match(captioned, /<text x="50" y="14"[^>]*>Scan<\/text>/);
+  assert.match(captioned, /transform="translate\(12 18\) scale\(0\.76\)"/);
 });
 
 test("fits long caption text inside the square SVG artwork", () => {
