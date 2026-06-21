@@ -129,21 +129,23 @@ test("adds optional captions above and below QR SVGs", () => {
 
   assert.match(captioned, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 100 100"/);
   assert.match(captioned, /<path fill="#f8fafc" d="M0 0h100v100H0z"\/>/);
-  assert.match(captioned, /<text x="50" y="11\.4" fill="#970302"[^>]+font-size="8"[^>]+font-weight="700"[^>]*>Scan &amp; learn<\/text>/);
-  assert.match(captioned, /<text x="50" y="88\.6"[^>]*>wikimedia\.org<\/text>/);
+  assert.match(captioned, /<text x="50" y="8" fill="#970302"[^>]+font-size="8"[^>]+font-weight="700"[^>]*>Scan &amp; learn<\/text>/);
+  assert.match(captioned, /<text x="50" y="92"[^>]*>wikimedia\.org<\/text>/);
   assert.match(captioned, /transform="translate\(16 16\) scale\(0\.68\)"/);
+  assert.ok(captioned.indexOf('transform="translate(16 16) scale(0.68)"') < captioned.indexOf("Scan &amp; learn"));
   assert.equal(addCaptionsToSvg(svg, { topText: "", bottomText: "" }), svg);
 });
 
-test("centers captions between page corners and visible QR modules", () => {
+test("centers captions between page corners and QR background box", () => {
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/><path fill="#202122" d="M10 10h80v80H10z"/></svg>';
   const captioned = addCaptionsToSvg(svg, {
     cornersEnabled: true,
     topText: "Scan"
   });
 
-  assert.match(captioned, /<text x="50" y="14"[^>]*>Scan<\/text>/);
+  assert.match(captioned, /<text x="50" y="10\.2"[^>]*>Scan<\/text>/);
   assert.match(captioned, /transform="translate\(12 18\) scale\(0\.76\)"/);
+  assert.ok(captioned.indexOf('transform="translate(12 18) scale(0.76)"') < captioned.indexOf(">Scan</text>"));
 });
 
 test("fits long caption text inside the square SVG artwork", () => {
