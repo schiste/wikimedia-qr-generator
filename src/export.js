@@ -1,5 +1,15 @@
 export const PRINT_BLEED_RATIO = 0.05;
 
+const OPEN_SOURCE_CAPTION_FONTS = {
+  "atkinson-hyperlegible": "'Atkinson Hyperlegible', 'Inter', 'Noto Sans'",
+  "fira-sans": "'Fira Sans', 'Inter', 'Noto Sans'",
+  inter: "'Inter', 'Noto Sans', 'Open Sans'",
+  "noto-sans": "'Noto Sans', 'Inter', 'Open Sans'",
+  "open-sans": "'Open Sans', 'Noto Sans', 'Inter'",
+  roboto: "'Roboto', 'Noto Sans', 'Inter'",
+  "source-sans-3": "'Source Sans 3', 'Source Sans Pro', 'Noto Sans'"
+};
+
 export function getPrintBleedPixels(trimSize, enabled, ratio = PRINT_BLEED_RATIO) {
   const size = Number(trimSize);
   if (!enabled || !Number.isFinite(size) || size <= 0) {
@@ -61,7 +71,8 @@ export function addPrintBleedToSvg(svg, options = {}) {
 export function addCaptionsToSvg(svg, options = {}) {
   const topText = normalizeCaptionText(options.topText);
   const bottomText = normalizeCaptionText(options.bottomText);
-  if (!topText && !bottomText) {
+  const cornersEnabled = Boolean(options.cornersEnabled);
+  if (!topText && !bottomText && !cornersEnabled) {
     return svg;
   }
 
@@ -81,16 +92,26 @@ export function addCaptionsToSvg(svg, options = {}) {
   const fontSize = viewBox.width * normalizeCaptionSizePercent(options.fontSizePercent) / 100;
   const topBand = topText ? fontSize * 2 : 0;
   const bottomBand = bottomText ? fontSize * 2 : 0;
-  const availableHeight = Math.max(viewBox.height * 0.5, viewBox.height - topBand - bottomBand);
-  const qrSize = Math.min(viewBox.width, availableHeight);
-  const qrScale = qrSize / Math.max(viewBox.width, viewBox.height);
-  const qrX = viewBox.x + (viewBox.width - viewBox.width * qrScale) / 2;
-  const qrY = viewBox.y + topBand + (availableHeight - viewBox.height * qrScale) / 2;
+  const cornerInset = cornersEnabled ? viewBox.width * 0.06 : 0;
+  const availableWidth = Math.max(viewBox.width * 0.5, viewBox.width - cornerInset * 2);
+  const availableHeight = Math.max(viewBox.height * 0.5, viewBox.height - cornerInset * 2 - topBand - bottomBand);
+  const qrScale = Math.min(
+    availableWidth / viewBox.width,
+    availableHeight / viewBox.height
+  );
+  const qrWidth = viewBox.width * qrScale;
+  const qrHeight = viewBox.height * qrScale;
+  const qrX = viewBox.x + (viewBox.width - qrWidth) / 2;
+  const qrY = viewBox.y + cornerInset + topBand + (availableHeight - qrHeight) / 2;
+  const qrBottom = qrY + qrHeight;
   const centerX = viewBox.x + viewBox.width / 2;
-  const maxTextWidth = viewBox.width * 0.9;
+  const maxTextWidth = availableWidth * 0.94;
   const background = escapeAttribute(options.background || "#ffffff");
   const color = escapeAttribute(options.color || "#202122");
+  const fontFamily = escapeAttribute(normalizeCaptionFontFamily(options.fontFamily));
   const weight = normalizeCaptionWeight(options.fontWeight);
+  const cornerDefs = cornersEnabled ? renderCornerDefs(options) : "";
+  const cornerLayer = cornersEnabled ? renderPageCorners(viewBox, options) : "";
   const inner = svgString.slice(rootMatch.index + rootMatch[0].length, closeIndex);
   const outerRoot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formatViewBox(viewBox)}" role="img" aria-label="QR code with captions">`;
   const qrLayer = [
@@ -103,24 +124,28 @@ export function addCaptionsToSvg(svg, options = {}) {
 
   return [
     outerRoot,
+    cornerDefs,
     `<path fill="${background}" d="M${formatNumber(viewBox.x)} ${formatNumber(viewBox.y)}h${formatNumber(viewBox.width)}v${formatNumber(viewBox.height)}H${formatNumber(viewBox.x)}z"/>`,
     topText ? renderCaptionText(topText, {
       color,
+      fontFamily,
       fontSize,
       maxTextWidth,
       weight,
       x: centerX,
-      y: viewBox.y + topBand / 2
+      y: (viewBox.y + qrY) / 2
     }) : "",
     qrLayer,
     bottomText ? renderCaptionText(bottomText, {
       color,
+      fontFamily,
       fontSize,
       maxTextWidth,
       weight,
       x: centerX,
-      y: viewBox.y + viewBox.height - bottomBand / 2
+      y: (qrBottom + viewBox.y + viewBox.height) / 2
     }) : "",
+    cornerLayer,
     "</svg>"
   ].filter(Boolean).join("");
 }
@@ -250,9 +275,14 @@ function normalizeCaptionWeight(value) {
   return ["400", "600", "700"].includes(weight) ? weight : "600";
 }
 
+function normalizeCaptionFontFamily(value) {
+  const font = String(value ?? "");
+  return OPEN_SOURCE_CAPTION_FONTS[font] || OPEN_SOURCE_CAPTION_FONTS.inter;
+}
+
 function renderCaptionText(text, options) {
   const fitAttributes = getCaptionFitAttributes(text, options.fontSize, options.maxTextWidth);
-  return `<text x="${formatNumber(options.x)}" y="${formatNumber(options.y)}" fill="${options.color}" font-family="Arial, Helvetica, sans-serif" font-size="${formatNumber(options.fontSize)}" font-weight="${options.weight}" text-anchor="middle" dominant-baseline="middle"${fitAttributes}>${escapeText(text)}</text>`;
+  return `<text x="${formatNumber(options.x)}" y="${formatNumber(options.y)}" fill="${options.color}" font-family="${options.fontFamily}" font-size="${formatNumber(options.fontSize)}" font-weight="${options.weight}" text-anchor="middle" dominant-baseline="middle"${fitAttributes}>${escapeText(text)}</text>`;
 }
 
 function getCaptionFitAttributes(text, fontSize, maxWidth) {
@@ -261,6 +291,57 @@ function getCaptionFitAttributes(text, fontSize, maxWidth) {
     return "";
   }
   return ` textLength="${formatNumber(maxWidth)}" lengthAdjust="spacingAndGlyphs"`;
+}
+
+function renderCornerDefs(options) {
+  if (options.cornerColorMode !== "gradient") {
+    return "";
+  }
+  const start = escapeAttribute(options.cornerColor || "#202122");
+  const end = escapeAttribute(options.cornerColorSecondary || "#006bb6");
+  return `<defs><linearGradient id="qr-page-corners-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${start}"/><stop offset="1" stop-color="${end}"/></linearGradient></defs>`;
+}
+
+function renderPageCorners(viewBox, options) {
+  const stroke = options.cornerColorMode === "gradient"
+    ? "url(#qr-page-corners-gradient)"
+    : escapeAttribute(options.cornerColor || "#202122");
+  const style = options.cornerStyle === "rounded" ? "rounded" : "right";
+  const strokeWidth = Math.max(0.8, viewBox.width * 0.012);
+  const inset = strokeWidth * 2;
+  const length = viewBox.width * 0.12;
+  const radius = length * 0.32;
+  const paths = style === "rounded"
+    ? renderRoundedCornerPaths(viewBox, inset, length, radius)
+    : renderRightCornerPaths(viewBox, inset, length);
+  const lineJoin = style === "rounded" ? "round" : "miter";
+  return `<g class="page-corners" fill="none" stroke="${stroke}" stroke-width="${formatNumber(strokeWidth)}" stroke-linecap="round" stroke-linejoin="${lineJoin}">${paths}</g>`;
+}
+
+function renderRightCornerPaths(viewBox, inset, length) {
+  const left = viewBox.x + inset;
+  const right = viewBox.x + viewBox.width - inset;
+  const top = viewBox.y + inset;
+  const bottom = viewBox.y + viewBox.height - inset;
+  return [
+    `M${formatNumber(left)} ${formatNumber(top + length)}V${formatNumber(top)}H${formatNumber(left + length)}`,
+    `M${formatNumber(right - length)} ${formatNumber(top)}H${formatNumber(right)}V${formatNumber(top + length)}`,
+    `M${formatNumber(right)} ${formatNumber(bottom - length)}V${formatNumber(bottom)}H${formatNumber(right - length)}`,
+    `M${formatNumber(left + length)} ${formatNumber(bottom)}H${formatNumber(left)}V${formatNumber(bottom - length)}`
+  ].map((path) => `<path d="${path}"/>`).join("");
+}
+
+function renderRoundedCornerPaths(viewBox, inset, length, radius) {
+  const left = viewBox.x + inset;
+  const right = viewBox.x + viewBox.width - inset;
+  const top = viewBox.y + inset;
+  const bottom = viewBox.y + viewBox.height - inset;
+  return [
+    `M${formatNumber(left)} ${formatNumber(top + length)}V${formatNumber(top + radius)}Q${formatNumber(left)} ${formatNumber(top)} ${formatNumber(left + radius)} ${formatNumber(top)}H${formatNumber(left + length)}`,
+    `M${formatNumber(right - length)} ${formatNumber(top)}H${formatNumber(right - radius)}Q${formatNumber(right)} ${formatNumber(top)} ${formatNumber(right)} ${formatNumber(top + radius)}V${formatNumber(top + length)}`,
+    `M${formatNumber(right)} ${formatNumber(bottom - length)}V${formatNumber(bottom - radius)}Q${formatNumber(right)} ${formatNumber(bottom)} ${formatNumber(right - radius)} ${formatNumber(bottom)}H${formatNumber(right - length)}`,
+    `M${formatNumber(left + length)} ${formatNumber(bottom)}H${formatNumber(left + radius)}Q${formatNumber(left)} ${formatNumber(bottom)} ${formatNumber(left)} ${formatNumber(bottom - radius)}V${formatNumber(bottom - length)}`
+  ].map((path) => `<path d="${path}"/>`).join("");
 }
 
 function addSvgRootAttributes(rootTag, attributes) {

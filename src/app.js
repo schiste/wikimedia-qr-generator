@@ -63,9 +63,15 @@ const foregroundSecondaryInput = document.querySelector("#foreground-secondary")
 const backgroundInput = document.querySelector("#background");
 const captionTopInput = document.querySelector("#caption-top");
 const captionBottomInput = document.querySelector("#caption-bottom");
+const captionFontInput = document.querySelector("#caption-font");
 const captionSizeInput = document.querySelector("#caption-size");
 const captionWeightInput = document.querySelector("#caption-weight");
 const captionColorInput = document.querySelector("#caption-color");
+const captionCornersInput = document.querySelector("#caption-corners");
+const captionCornerStyleInput = document.querySelector("#caption-corner-style");
+const captionCornerColorModeInput = document.querySelector("#caption-corner-color-mode");
+const captionCornerColorInput = document.querySelector("#caption-corner-color");
+const captionCornerColorSecondaryInput = document.querySelector("#caption-corner-color-secondary");
 const accentColorField = document.querySelector("#accent-color-field");
 const presetButtons = document.querySelectorAll("[data-preset]");
 const colorButtons = document.querySelectorAll("[data-color-target]");
@@ -196,9 +202,15 @@ for (const element of [
   backgroundInput,
   captionTopInput,
   captionBottomInput,
+  captionFontInput,
   captionSizeInput,
   captionWeightInput,
   captionColorInput,
+  captionCornersInput,
+  captionCornerStyleInput,
+  captionCornerColorModeInput,
+  captionCornerColorInput,
+  captionCornerColorSecondaryInput,
   logoSizeInput
 ]) {
   element.addEventListener("input", render);
@@ -908,9 +920,15 @@ function getDesignConfig() {
     background: backgroundInput.value,
     captionTop: captionTopInput.value,
     captionBottom: captionBottomInput.value,
+    captionFont: captionFontInput.value,
     captionSize: captionSizeInput.value,
     captionWeight: captionWeightInput.value,
     captionColor: captionColorInput.value,
+    captionCorners: captionCornersInput.checked,
+    captionCornerStyle: captionCornerStyleInput.value,
+    captionCornerColorMode: captionCornerColorModeInput.value,
+    captionCornerColor: captionCornerColorInput.value,
+    captionCornerColorSecondary: captionCornerColorSecondaryInput.value,
     logo: selectedLogo,
     logoSize: logoSizeInput.value,
     exportSize: exportSizeInput.value,
@@ -944,9 +962,15 @@ function applyDesignConfig(config) {
   backgroundInput.value = normalized.background;
   captionTopInput.value = normalized.captionTop;
   captionBottomInput.value = normalized.captionBottom;
+  captionFontInput.value = normalized.captionFont;
   captionSizeInput.value = normalized.captionSize;
   captionWeightInput.value = normalized.captionWeight;
   captionColorInput.value = normalized.captionColor;
+  captionCornersInput.checked = normalized.captionCorners;
+  captionCornerStyleInput.value = normalized.captionCornerStyle;
+  captionCornerColorModeInput.value = normalized.captionCornerColorMode;
+  captionCornerColorInput.value = normalized.captionCornerColor;
+  captionCornerColorSecondaryInput.value = normalized.captionCornerColorSecondary;
   selectedLogo = normalized.logo;
   ensureLogoOption(selectedLogo);
   logoSelect.value = selectedLogo;
@@ -993,9 +1017,15 @@ function normalizeDesignConfig(config) {
     background: colorValue(source.background, fallback.background),
     captionTop: stringValue(source.captionTop, fallback.captionTop),
     captionBottom: stringValue(source.captionBottom, fallback.captionBottom),
+    captionFont: optionValue(captionFontInput, source.captionFont, fallback.captionFont),
     captionSize: rangeValue(captionSizeInput, source.captionSize, fallback.captionSize),
     captionWeight: optionValue(captionWeightInput, source.captionWeight, fallback.captionWeight),
     captionColor: colorValue(source.captionColor, fallback.captionColor),
+    captionCorners: booleanValue(source.captionCorners, fallback.captionCorners),
+    captionCornerStyle: optionValue(captionCornerStyleInput, source.captionCornerStyle, fallback.captionCornerStyle),
+    captionCornerColorMode: optionValue(captionCornerColorModeInput, source.captionCornerColorMode, fallback.captionCornerColorMode),
+    captionCornerColor: colorValue(source.captionCornerColor, fallback.captionCornerColor),
+    captionCornerColorSecondary: colorValue(source.captionCornerColorSecondary, fallback.captionCornerColorSecondary),
     logo: normalizeLogoId(source.logo, fallback.logo),
     logoSize: rangeValue(logoSizeInput, source.logoSize, fallback.logoSize),
     exportSize: optionValue(exportSizeInput, source.exportSize, fallback.exportSize),
@@ -1300,6 +1330,12 @@ function getCaptionOptions() {
     background: backgroundInput.value,
     bottomText: captionBottomInput.value,
     color: captionColorInput.value,
+    cornerColor: captionCornerColorInput.value,
+    cornerColorMode: captionCornerColorModeInput.value,
+    cornerColorSecondary: captionCornerColorSecondaryInput.value,
+    cornersEnabled: captionCornersInput.checked,
+    cornerStyle: captionCornerStyleInput.value,
+    fontFamily: captionFontInput.value,
     fontSizePercent: Number(captionSizeInput.value),
     fontWeight: captionWeightInput.value,
     topText: captionTopInput.value

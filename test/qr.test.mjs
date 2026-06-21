@@ -142,7 +142,28 @@ test("fits long caption text inside the square SVG artwork", () => {
     fontSizePercent: 10
   });
 
-  assert.match(captioned, /textLength="90" lengthAdjust="spacingAndGlyphs"/);
+  assert.match(captioned, /textLength="94" lengthAdjust="spacingAndGlyphs"/);
+});
+
+test("renders selected open-source caption font and gradient page corners", () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#fff" d="M0 0h100v100H0z"/></svg>';
+  const captioned = addCaptionsToSvg(svg, {
+    cornerColor: "#970302",
+    cornerColorMode: "gradient",
+    cornerColorSecondary: "#006bb6",
+    cornersEnabled: true,
+    cornerStyle: "rounded",
+    fontFamily: "fira-sans",
+    topText: "Scan"
+  });
+
+  assert.match(captioned, /font-family="'Fira Sans', 'Inter', 'Noto Sans'"/);
+  assert.match(captioned, /<linearGradient id="qr-page-corners-gradient"/);
+  assert.match(captioned, /<stop offset="0" stop-color="#970302"\/>/);
+  assert.match(captioned, /<stop offset="1" stop-color="#006bb6"\/>/);
+  assert.match(captioned, /<g class="page-corners"[^>]+stroke="url\(#qr-page-corners-gradient\)"[^>]+stroke-linejoin="round"/);
+  assert.match(captioned, /Q/);
+  assert.match(captioned, /transform="translate\(12 18\) scale\(0\.76\)"/);
 });
 
 test("adds optional Inkscape document data to exported SVGs", () => {

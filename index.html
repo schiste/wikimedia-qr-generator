@@ -402,6 +402,19 @@
                 </label>
 
                 <label class="field">
+                  <span>Font</span>
+                  <select id="caption-font">
+                    <option value="inter" selected>Inter</option>
+                    <option value="noto-sans">Noto Sans</option>
+                    <option value="open-sans">Open Sans</option>
+                    <option value="source-sans-3">Source Sans 3</option>
+                    <option value="roboto">Roboto</option>
+                    <option value="fira-sans">Fira Sans</option>
+                    <option value="atkinson-hyperlegible">Atkinson Hyperlegible</option>
+                  </select>
+                </label>
+
+                <label class="field">
                   <span>Text size</span>
                   <input id="caption-size" type="range" min="4" max="12" value="6">
                 </label>
@@ -418,6 +431,37 @@
                 <label class="field">
                   <span>Text color</span>
                   <input id="caption-color" type="color" value="#202122">
+                </label>
+
+                <label class="checkbox-row field--wide">
+                  <input id="caption-corners" type="checkbox">
+                  <span>Show page corners</span>
+                </label>
+
+                <label class="field">
+                  <span>Corner shape</span>
+                  <select id="caption-corner-style">
+                    <option value="right" selected>Right angle</option>
+                    <option value="rounded">Round angle</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Corner color mode</span>
+                  <select id="caption-corner-color-mode">
+                    <option value="solid" selected>Solid</option>
+                    <option value="gradient">Gradient</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Corner color</span>
+                  <input id="caption-corner-color" type="color" value="#202122">
+                </label>
+
+                <label class="field">
+                  <span>Gradient end</span>
+                  <input id="caption-corner-color-secondary" type="color" value="#006bb6">
                 </label>
               </div>
             </section>
