@@ -7,6 +7,13 @@ import {
   getExportPixelSize,
   stripInkscapeDataFromSvg
 } from "./export.js";
+import {
+  advancedBulkFileName,
+  createAdvancedBulkTemplateCsv,
+  formatAdvancedBulkIssues,
+  lintAdvancedBulkCsv,
+  parseAdvancedBulkCsv
+} from "./advancedBulk.js";
 import { fetchCatalogCommonsLogo } from "./commonsLogo.js";
 import { createZipBlob } from "./zip.js";
 import {
@@ -106,6 +113,13 @@ const downloadPngButton = document.querySelector("#download-png");
 const bulkUrlsInput = document.querySelector("#bulk-urls");
 const bulkGenerateButton = document.querySelector("#bulk-generate");
 const bulkStatus = document.querySelector("#bulk-status");
+const advancedBulkCsvInput = document.querySelector("#advanced-bulk-csv");
+const advancedBulkFileInput = document.querySelector("#advanced-bulk-file");
+const advancedBulkTemplateButton = document.querySelector("#advanced-bulk-template");
+const advancedBulkValidateButton = document.querySelector("#advanced-bulk-validate");
+const advancedBulkGenerateButton = document.querySelector("#advanced-bulk-generate");
+const advancedBulkProgress = document.querySelector("#advanced-bulk-progress");
+const advancedBulkStatus = document.querySelector("#advanced-bulk-status");
 
 const STORAGE_VERSION = 1;
 const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
@@ -268,6 +282,10 @@ copySvgButton.addEventListener("click", () => runExportAction(copySvg));
 downloadSvgButton.addEventListener("click", () => runExportAction(downloadSvg));
 downloadPngButton.addEventListener("click", () => runExportAction(() => downloadPng(Number(exportSizeInput.value))));
 bulkGenerateButton.addEventListener("click", runBulkGeneration);
+advancedBulkFileInput.addEventListener("change", handleAdvancedBulkFile);
+advancedBulkTemplateButton.addEventListener("click", downloadAdvancedBulkTemplate);
+advancedBulkValidateButton.addEventListener("click", validateAdvancedBulkCsv);
+advancedBulkGenerateButton.addEventListener("click", runAdvancedBulkGeneration);
 themeDarkButton.addEventListener("click", () => setTheme("dark"));
 themeLightButton.addEventListener("click", () => setTheme("light"));
 document.addEventListener("mousedown", (event) => {
@@ -383,10 +401,11 @@ function render() {
     updateLogoDetails();
     syncColorRows();
 
+    const designConfig = getDesignConfig();
     const content = compileContentPayload();
-    const qrAsset = createStyledQrSvg(content.payload);
-    const previewSvg = getCaptionedSvg(qrAsset.svg);
-    const previewSize = Number(sizeInput.value);
+    const qrAsset = createStyledQrSvg(content.payload, designConfig);
+    const previewSvg = getCaptionedSvg(qrAsset.svg, designConfig);
+    const previewSize = Number(designConfig.size);
     currentPngSize = previewSize;
     currentUrl = content.payload;
     currentSvg = qrAsset.svg;
@@ -396,7 +415,7 @@ function render() {
     targetUrlOutput.value = content.label;
     qrMetaOutput.value = `v${qrAsset.qr.version} / ${qrAsset.qr.size} modules / EC ${qrAsset.qr.errorCorrection}`;
 
-    if (selectedLogo !== "none") {
+    if (designConfig.logo !== "none") {
       setStatus(
         printBleedInput.checked
           ? "Logo selected; high correction and print bleed are active."
@@ -425,30 +444,31 @@ function render() {
   }
 }
 
-function createStyledQrSvg(payload) {
+function createStyledQrSvg(payload, config = getDesignConfig()) {
+  const designConfig = normalizeDesignConfig(config);
   const qr = createQrCode(payload, {
-    errorCorrection: getEffectiveErrorCorrection()
+    errorCorrection: getEffectiveErrorCorrection(designConfig)
   });
 
   return {
     qr,
     svg: qr.toSvg({
-      margin: Number(marginInput.value),
-      foreground: foregroundInput.value,
-      foregroundSecondary: foregroundSecondaryInput.value,
-      background: backgroundInput.value,
-      moduleStyle: moduleStyleInput.value,
-      cornerSquareStyle: cornerSquareStyleInput.value,
-      cornerDotStyle: cornerDotStyleInput.value,
-      colorMode: colorModeInput.value,
-      logo: getActiveLogo(selectedLogo),
-      logoSize: Number(logoSizeInput.value) / 100
+      margin: Number(designConfig.margin),
+      foreground: designConfig.foreground,
+      foregroundSecondary: designConfig.foregroundSecondary,
+      background: designConfig.background,
+      moduleStyle: designConfig.moduleStyle,
+      cornerSquareStyle: designConfig.cornerSquareStyle,
+      cornerDotStyle: designConfig.cornerDotStyle,
+      colorMode: designConfig.colorMode,
+      logo: getActiveLogo(designConfig.logo),
+      logoSize: Number(designConfig.logoSize) / 100
     })
   };
 }
 
-function getEffectiveErrorCorrection() {
-  return selectedLogo === "none" ? errorCorrectionInput.value : "high";
+function getEffectiveErrorCorrection(config = getDesignConfig()) {
+  return config.logo === "none" ? config.errorCorrection : "high";
 }
 
 function compileContentPayload() {
@@ -576,6 +596,33 @@ function ensureLogoOption(logoId) {
 
 function getActiveLogo(logoId) {
   return libraryLogosById.get(logoId) || getLogo(logoId);
+}
+
+function advancedBulkOptions() {
+  return {
+    baseConfig: getDesignConfig(),
+    isLogoKnown: isBulkLogoKnown
+  };
+}
+
+function isBulkLogoKnown(logoId) {
+  return CENTER_LOGO_IDS.includes(logoId) || hasLogoLibraryEntry(logoId) || libraryLogosById.has(logoId);
+}
+
+async function ensureBulkLogoLoaded(logoId) {
+  if (!logoId || logoId === "none" || CENTER_LOGO_IDS.includes(logoId) || libraryLogosById.has(logoId)) {
+    return;
+  }
+
+  const entry = getLogoLibraryEntry(logoId);
+  if (!entry?.commonsTitle) {
+    throw new Error(`Logo "${logoId}" is known but cannot be loaded for export.`);
+  }
+
+  const logo = await loadLibraryLogo(entry);
+  if (!logo) {
+    throw new Error(`Could not load logo "${logoId}" for advanced bulk export.`);
+  }
 }
 
 function initializeLogoLibraryFilters() {
@@ -1247,11 +1294,24 @@ function setActionState(disabled) {
   downloadSvgButton.disabled = disabled;
   downloadPngButton.disabled = disabled;
   bulkGenerateButton.disabled = disabled;
+  advancedBulkTemplateButton.disabled = disabled;
+  advancedBulkValidateButton.disabled = disabled;
+  advancedBulkGenerateButton.disabled = disabled;
 }
 
 function setBulkStatus(message, tone = "") {
   bulkStatus.value = message;
   bulkStatus.dataset.tone = tone;
+}
+
+function setAdvancedBulkStatus(message, tone = "") {
+  advancedBulkStatus.value = message;
+  advancedBulkStatus.dataset.tone = tone;
+}
+
+function setAdvancedBulkProgress(value, max) {
+  advancedBulkProgress.max = Math.max(1, max);
+  advancedBulkProgress.value = Math.max(0, Math.min(value, max));
 }
 
 async function runExportAction(action) {
@@ -1278,30 +1338,85 @@ async function runBulkGeneration() {
   }
 }
 
+async function runAdvancedBulkGeneration() {
+  setActionState(true);
+  try {
+    await generateAdvancedBulkZip();
+  } catch (error) {
+    const message = error.issues
+      ? formatAdvancedBulkIssues(error.issues)
+      : error.message || "Advanced bulk generation failed.";
+    setStatus("Advanced CSV bulk failed. See the CSV status for details.", "error");
+    setAdvancedBulkStatus(message, "error");
+  } finally {
+    setActionState(!currentSvg);
+  }
+}
+
+function validateAdvancedBulkCsv() {
+  const result = lintAdvancedBulkCsv(advancedBulkCsvInput.value, advancedBulkOptions());
+  if (result.ok) {
+    setAdvancedBulkProgress(0, result.rows.length || 1);
+    setAdvancedBulkStatus(
+      `Validated ${result.rows.length} row${result.rows.length === 1 ? "" : "s"}. Blank cells will inherit the current design.`,
+      "success"
+    );
+    setStatus("Advanced CSV validated.", "success");
+  } else {
+    setAdvancedBulkProgress(0, 1);
+    setAdvancedBulkStatus(formatAdvancedBulkIssues(result.issues), "error");
+    setStatus(`Advanced CSV has ${result.issues.length} issue${result.issues.length === 1 ? "" : "s"}.`, "error");
+  }
+  return result;
+}
+
+async function handleAdvancedBulkFile() {
+  const file = advancedBulkFileInput.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    advancedBulkCsvInput.value = await file.text();
+    setAdvancedBulkStatus(`Loaded ${file.name}. Validate before generating.`, "success");
+    setAdvancedBulkProgress(0, 1);
+  } catch (error) {
+    setAdvancedBulkStatus(error.message || "Could not read the CSV file.", "error");
+  }
+}
+
+function downloadAdvancedBulkTemplate() {
+  const csv = createAdvancedBulkTemplateCsv(getDesignConfig());
+  downloadBlob("wikimedia-qr-advanced-template.csv", new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  setAdvancedBulkStatus("Template CSV downloaded.", "success");
+}
+
 function downloadSvg() {
-  downloadBlob(svgFileName(), new Blob([getExportSvg()], { type: "image/svg+xml" }));
+  downloadBlob(svgFileName(), new Blob([getExportSvg(currentSvg, getDesignConfig(), svgFileName())], { type: "image/svg+xml" }));
   setStatus("SVG downloaded.", "success");
 }
 
 async function downloadPng(size = currentPngSize) {
-  const dimensions = getExportPixelSize(size, printBleedInput.checked);
-  const blob = await createPngBlob(getRasterSvg(), dimensions.total);
+  const designConfig = getDesignConfig();
+  const dimensions = getExportPixelSize(size, designConfig.printBleed);
+  const blob = await createPngBlob(getRasterSvg(currentSvg, designConfig), dimensions.total, designConfig.background);
 
-  downloadBlob(`${fileBaseName()}${fileExportSuffix()}.png`, blob);
+  downloadBlob(`${fileBaseName()}${fileExportSuffix(designConfig)}.png`, blob);
   setStatus(`PNG downloaded at ${dimensions.total} x ${dimensions.total}.`, "success");
 }
 
 async function generateBulkZip() {
   const urls = parseBulkUrlList(bulkUrlsInput.value);
-  const dimensions = getExportPixelSize(Number(exportSizeInput.value), printBleedInput.checked);
-  const suffix = fileExportSuffix();
+  const designConfig = getDesignConfig();
+  const dimensions = getExportPixelSize(Number(designConfig.exportSize), designConfig.printBleed);
+  const suffix = fileExportSuffix(designConfig);
   const files = [];
 
   setBulkStatus(`Validated ${urls.length} URL${urls.length === 1 ? "" : "s"}.`, "success");
 
   for (const [index, url] of urls.entries()) {
-    const svg = getRasterSvg(createStyledQrSvg(url).svg);
-    const blob = await createPngBlob(svg, dimensions.total);
+    const svg = getRasterSvg(createStyledQrSvg(url, designConfig).svg, designConfig);
+    const blob = await createPngBlob(svg, dimensions.total, designConfig.background);
     files.push({
       name: bulkQrFileName(url, index, { suffix }),
       data: new Uint8Array(await blob.arrayBuffer())
@@ -1315,7 +1430,49 @@ async function generateBulkZip() {
   setBulkStatus(`Downloaded ${urls.length} QR code${urls.length === 1 ? "" : "s"} as PNG ZIP.`, "success");
 }
 
-async function createPngBlob(svg, size) {
+async function generateAdvancedBulkZip() {
+  const rows = parseAdvancedBulkCsv(advancedBulkCsvInput.value, advancedBulkOptions());
+  const files = [];
+  const usedNames = new Set();
+
+  if (rows.length === 0) {
+    throw new Error("Advanced CSV has no rows to generate.");
+  }
+
+  setAdvancedBulkProgress(0, rows.length);
+  setAdvancedBulkStatus(`Validated ${rows.length} row${rows.length === 1 ? "" : "s"}. Starting generation...`, "success");
+
+  for (const [index, row] of rows.entries()) {
+    await ensureBulkLogoLoaded(row.config.logo);
+
+    const qrAsset = createStyledQrSvg(row.payload, row.config);
+    if (row.format === "svg" || row.format === "both") {
+      const name = uniqueZipName(advancedBulkFileName(row, "svg", row.index), usedNames);
+      const svg = getExportSvg(qrAsset.svg, row.config, name);
+      files.push({ name, data: svg });
+    }
+
+    if (row.format === "png" || row.format === "both") {
+      const dimensions = getExportPixelSize(Number(row.exportSize), row.config.printBleed);
+      const svg = getRasterSvg(qrAsset.svg, row.config);
+      const blob = await createPngBlob(svg, dimensions.total, row.config.background);
+      files.push({
+        name: uniqueZipName(advancedBulkFileName(row, "png", row.index), usedNames),
+        data: new Uint8Array(await blob.arrayBuffer())
+      });
+    }
+
+    setAdvancedBulkProgress(index + 1, rows.length);
+    setAdvancedBulkStatus(`Generated ${index + 1}/${rows.length}: ${row.filenameBase}`, "success");
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+  }
+
+  downloadBlob("wikimedia-qr-advanced-bulk.zip", createZipBlob(files));
+  setStatus(`Advanced ZIP downloaded with ${files.length} file${files.length === 1 ? "" : "s"}.`, "success");
+  setAdvancedBulkStatus(`Downloaded ${files.length} file${files.length === 1 ? "" : "s"} from ${rows.length} CSV row${rows.length === 1 ? "" : "s"}.`, "success");
+}
+
+async function createPngBlob(svg, size, background = backgroundInput.value) {
   const image = new Image();
   const svgBlob = new Blob([svg], { type: "image/svg+xml" });
   const url = URL.createObjectURL(svgBlob);
@@ -1334,7 +1491,7 @@ async function createPngBlob(svg, size) {
     if (!context) {
       throw new Error("Could not create a PNG canvas.");
     }
-    context.fillStyle = backgroundInput.value;
+    context.fillStyle = background;
     context.fillRect(0, 0, size, size);
     context.imageSmoothingEnabled = false;
     context.drawImage(image, 0, 0, size, size);
@@ -1381,55 +1538,78 @@ function downloadBlob(filename, blob) {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function getExportSvg() {
-  return addInkscapeDataToSvg(getRasterSvg(), {
-    documentName: svgFileName(),
-    enabled: inkscapeSvgInput.checked,
+function uniqueZipName(name, usedNames) {
+  if (!usedNames.has(name)) {
+    usedNames.add(name);
+    return name;
+  }
+
+  const match = String(name).match(/^(.*?)(\.[^.]+)?$/);
+  const base = match?.[1] || "wikimedia-qr";
+  const extension = match?.[2] || "";
+  let counter = 2;
+  let candidate = `${base}-${counter}${extension}`;
+  while (usedNames.has(candidate)) {
+    counter += 1;
+    candidate = `${base}-${counter}${extension}`;
+  }
+  usedNames.add(candidate);
+  return candidate;
+}
+
+function getExportSvg(svg = currentSvg, config = getDesignConfig(), documentName = svgFileName()) {
+  const designConfig = normalizeDesignConfig(config);
+  return addInkscapeDataToSvg(getRasterSvg(svg, designConfig), {
+    documentName,
+    enabled: designConfig.inkscapeSvg,
     title: "Wikimedia QR code"
   });
 }
 
-function getRasterSvg(svg = currentSvg) {
-  const captionedSvg = getCaptionedSvg(svg);
+function getRasterSvg(svg = currentSvg, config = getDesignConfig()) {
+  const designConfig = normalizeDesignConfig(config);
+  const captionedSvg = getCaptionedSvg(svg, designConfig);
   const svgWithBleed = addPrintBleedToSvg(captionedSvg, {
-    background: backgroundInput.value,
-    enabled: printBleedInput.checked
+    background: designConfig.background,
+    enabled: designConfig.printBleed
   });
 
   return stripInkscapeDataFromSvg(svgWithBleed);
 }
 
-function getCaptionedSvg(svg) {
-  return addCaptionsToSvg(svg, getCaptionOptions());
+function getCaptionedSvg(svg, config = getDesignConfig()) {
+  return addCaptionsToSvg(svg, getCaptionOptions(config));
 }
 
-function getCaptionOptions() {
+function getCaptionOptions(config = getDesignConfig()) {
+  const designConfig = normalizeDesignConfig(config);
   return {
-    background: backgroundInput.value,
-    bottomText: captionBottomInput.value,
-    color: captionColorInput.value,
-    cornerColor: captionCornerColorInput.value,
-    cornerColorMode: captionCornerColorModeInput.value,
-    cornerColorSecondary: captionCornerColorSecondaryInput.value,
-    cornersEnabled: captionCornersInput.checked,
-    cornerStyle: captionCornerStyleInput.value,
-    fontFamily: captionFontInput.value,
-    fontSizePercent: Number(captionSizeInput.value),
-    fontWeight: captionWeightInput.value,
-    topText: captionTopInput.value
+    background: designConfig.background,
+    bottomText: designConfig.captionBottom,
+    color: designConfig.captionColor,
+    cornerColor: designConfig.captionCornerColor,
+    cornerColorMode: designConfig.captionCornerColorMode,
+    cornerColorSecondary: designConfig.captionCornerColorSecondary,
+    cornersEnabled: designConfig.captionCorners,
+    cornerStyle: designConfig.captionCornerStyle,
+    fontFamily: designConfig.captionFont,
+    fontSizePercent: Number(designConfig.captionSize),
+    fontWeight: designConfig.captionWeight,
+    topText: designConfig.captionTop
   };
 }
 
 function svgFileName() {
-  return `${fileBaseName()}${fileExportSuffix({ includeInkscape: true })}.svg`;
+  return `${fileBaseName()}${fileExportSuffix(getDesignConfig(), { includeInkscape: true })}.svg`;
 }
 
-function fileExportSuffix({ includeInkscape = false } = {}) {
+function fileExportSuffix(config = getDesignConfig(), { includeInkscape = false } = {}) {
+  const designConfig = normalizeDesignConfig(config);
   const parts = [];
-  if (printBleedInput.checked) {
+  if (designConfig.printBleed) {
     parts.push("bleed");
   }
-  if (includeInkscape && inkscapeSvgInput.checked) {
+  if (includeInkscape && designConfig.inkscapeSvg) {
     parts.push("inkscape");
   }
   return parts.length ? `-${parts.join("-")}` : "";

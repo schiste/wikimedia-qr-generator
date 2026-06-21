@@ -389,7 +389,17 @@ function validateAndBuildPayload(config, lineNumber, sourceHeaders) {
     switch (contentType) {
       case "url": {
         const url = requireValue(config.url, "url", "URL content requires a url value.", lineNumber, sourceHeaders);
-        const payload = normalizeDirectUrl(url);
+        let payload;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:\/\//i.test(url)) {
+          issues.push(makeIssue(lineNumber, sourceHeaders.get("url") || "url", "Use an HTTP or HTTPS URL."));
+          return { issues, payload: "", label: "" };
+        }
+        try {
+          payload = normalizeDirectUrl(url);
+        } catch {
+          issues.push(makeIssue(lineNumber, sourceHeaders.get("url") || "url", "Expected a valid HTTP or HTTPS URL."));
+          return { issues, payload: "", label: "" };
+        }
         return { issues, payload, label: payload };
       }
       case "text": {

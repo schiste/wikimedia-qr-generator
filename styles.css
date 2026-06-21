@@ -1492,6 +1492,103 @@ a:focus-visible {
   color: var(--green);
 }
 
+.advanced-bulk {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 12px;
+}
+
+.advanced-bulk summary {
+  display: flex;
+  width: fit-content;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 760;
+  list-style: none;
+}
+
+.advanced-bulk summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-bulk summary::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.16s ease;
+}
+
+.advanced-bulk[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.advanced-bulk summary small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.advanced-bulk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.advanced-bulk-panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.advanced-bulk-file {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.advanced-bulk-file input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 8px;
+  font-size: 11px;
+}
+
+.advanced-bulk-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.advanced-bulk-progress {
+  display: grid;
+  gap: 7px;
+}
+
+.advanced-bulk-progress progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent);
+}
+
+.advanced-bulk-progress .bulk-status {
+  max-height: 116px;
+  overflow: auto;
+  white-space: pre-line;
+  text-align: left;
+}
+
 .export-info strong {
   display: block;
   color: var(--text);
@@ -1728,6 +1825,10 @@ a:focus-visible {
 
   .bulk-status {
     text-align: left;
+  }
+
+  .advanced-bulk-grid {
+    grid-template-columns: 1fr;
   }
 
   .primary-action,

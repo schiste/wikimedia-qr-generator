@@ -85,6 +85,7 @@ test("advanced bulk linter reports readable row and column errors", () => {
   const message = formatAdvancedBulkIssues(result.issues);
   assert.match(message, /Line 2, column "foreground": Expected a #RRGGBB color/);
   assert.match(message, /Line 2, column "logo": Unknown logo "not-real"/);
+  assert.match(message, /Line 2, column "url": Use an HTTP or HTTPS URL/);
 });
 
 test("advanced bulk builds email, sms, and wifi payloads", () => {

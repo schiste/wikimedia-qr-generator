@@ -534,6 +534,38 @@
                 <button class="secondary-action" id="bulk-generate" type="button">Generate ZIP</button>
                 <output class="bulk-status" id="bulk-status" aria-live="polite"></output>
               </div>
+
+              <details class="advanced-bulk">
+                <summary>
+                  <span>Advanced CSV bulk</span>
+                  <small>Blank cells inherit the current design</small>
+                </summary>
+
+                <div class="advanced-bulk-grid">
+                  <label class="bulk-url-field" for="advanced-bulk-csv">
+                    <span>CSV input</span>
+                    <textarea id="advanced-bulk-csv" rows="7" spellcheck="false" placeholder="filename,contentType,url,logo,foreground,captionTop&#10;wikimania-room,url,https://wikimania.wikimedia.org/,wikimania,#006bb6,Check West Room Planning"></textarea>
+                  </label>
+
+                  <div class="advanced-bulk-panel">
+                    <label class="advanced-bulk-file">
+                      <span>Import CSV</span>
+                      <input id="advanced-bulk-file" type="file" accept=".csv,text/csv">
+                    </label>
+
+                    <div class="advanced-bulk-actions">
+                      <button class="secondary-action" id="advanced-bulk-template" type="button">Download template</button>
+                      <button class="secondary-action" id="advanced-bulk-validate" type="button">Validate CSV</button>
+                      <button class="primary-action" id="advanced-bulk-generate" type="button">Generate advanced ZIP</button>
+                    </div>
+
+                    <div class="advanced-bulk-progress" aria-label="Advanced bulk progress">
+                      <progress id="advanced-bulk-progress" max="1" value="0"></progress>
+                      <output class="bulk-status" id="advanced-bulk-status" aria-live="polite"></output>
+                    </div>
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
         </main>
