@@ -116,6 +116,7 @@ const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
 const scanGuidance = document.querySelector("#scan-guidance");
 const exportSizeInput = document.querySelector("#export-size");
+const exportSizeSummary = document.querySelector("#export-size-summary");
 const marginValueOutput = document.querySelector("#margin-value");
 const sizeValueOutput = document.querySelector("#size-value");
 const captionSizeValueOutput = document.querySelector("#caption-size-value");
@@ -275,7 +276,8 @@ for (const element of [
   captionCornerColorModeInput,
   captionCornerColorInput,
   captionCornerColorSecondaryInput,
-  logoSizeInput
+  logoSizeInput,
+  exportSizeInput
 ]) {
   element.addEventListener("input", render);
   element.addEventListener("change", render);
@@ -459,6 +461,7 @@ function render() {
     syncColorRows();
 
     const designConfig = getDesignConfig();
+    updateExportSizeSummary(designConfig);
     const content = compileContentPayload();
     const qrAsset = createStyledQrSvg(content.payload, designConfig);
     const previewSvg = getCaptionedSvg(qrAsset.svg, designConfig);
@@ -1105,6 +1108,13 @@ function updateScanGuidance(config) {
   if (hasWarning) {
     scanStatusText.textContent = "Review scan checks";
   }
+}
+
+function updateExportSizeSummary(config) {
+  const dimensions = getExportPixelSize(Number(config.exportSize), config.printBleed);
+  exportSizeSummary.textContent = dimensions.bleed
+    ? `Final PNG: ${dimensions.total} x ${dimensions.total} px (${dimensions.trim}px + ${dimensions.bleed}px bleed)`
+    : `Final PNG: ${dimensions.total} x ${dimensions.total} px`;
 }
 
 function getScanGuidance(config) {
