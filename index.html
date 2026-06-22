@@ -6,8 +6,8 @@
     <meta name="description" content="Generate SVG and PNG QR codes for Wikimedia links.">
     <title>Wikimedia QR Generator</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=20260622-publish-popover">
-    <script type="module" src="src/app.js?v=20260622-publish-popover"></script>
+    <link rel="stylesheet" href="styles.css?v=20260622-flat-sections">
+    <script type="module" src="src/app.js?v=20260622-flat-sections"></script>
   </head>
   <body>
     <div class="app-shell theme-light" id="app-shell">
@@ -297,18 +297,7 @@
               <p class="section-note">Same bundled Wikimedia glyph set as the logo generator; no uploads and no non-Wikimedia marks.</p>
             </section>
 
-            <details class="control-disclosure advanced-style-disclosure">
-              <summary>
-                <span>Advanced styling</span>
-                <small>Palette, dots, corners, and captions</small>
-              </summary>
-
-              <div class="control-disclosure-body">
-                <div class="control-utility-row">
-                  <button class="secondary-action control-reset-button" id="reset-size-controls" type="button">Reset sizes</button>
-                </div>
-
-                <section class="control-section" aria-labelledby="palette-heading">
+            <section class="control-section" aria-labelledby="palette-heading">
                   <div class="section-heading">
                     <div class="section-title">
                       <span class="status-dot status-dot-amber" aria-hidden="true"></span>
@@ -361,13 +350,13 @@
                   </div>
                 </section>
 
-                <section class="control-section" aria-labelledby="shape-heading">
+            <section class="control-section" aria-labelledby="shape-heading">
                   <div class="section-heading">
                     <div class="section-title">
                       <span class="status-dot" aria-hidden="true"></span>
                       <h2 id="shape-heading">5. Dots & Corner Shapes</h2>
                     </div>
-                    <span class="section-meta">SVG</span>
+                    <button class="section-meta section-reset-button" id="reset-size-controls" type="button">Reset sizes</button>
                   </div>
 
                   <div class="options-grid" aria-label="QR shape options">
@@ -427,7 +416,7 @@
                   </div>
                 </section>
 
-                <section class="control-section" aria-labelledby="caption-heading">
+            <section class="control-section" aria-labelledby="caption-heading">
                   <div class="section-heading">
                     <div class="section-title">
                       <span class="status-dot status-dot-green" aria-hidden="true"></span>
@@ -514,8 +503,6 @@
                     </label>
                   </div>
                 </section>
-              </div>
-            </details>
           </form>
         </aside>
 
