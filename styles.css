@@ -1873,6 +1873,38 @@ a:focus-visible {
   color: var(--green);
 }
 
+.scan-guidance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scan-guidance li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.scan-guidance li[data-tone="success"] {
+  border-color: color-mix(in srgb, var(--green) 44%, var(--line));
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.scan-guidance li[data-tone="warning"] {
+  border-color: color-mix(in srgb, var(--amber) 52%, var(--line));
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+  color: var(--amber);
+}
+
 .export-controls {
   display: grid;
   width: 200px;

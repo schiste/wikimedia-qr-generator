@@ -114,6 +114,7 @@ const targetUrlOutput = document.querySelector("#target-url");
 const qrMetaOutput = document.querySelector("#qr-meta");
 const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
+const scanGuidance = document.querySelector("#scan-guidance");
 const exportSizeInput = document.querySelector("#export-size");
 const marginValueOutput = document.querySelector("#margin-value");
 const sizeValueOutput = document.querySelector("#size-value");
@@ -488,6 +489,7 @@ function render() {
       scanStatusText.textContent = "Active and scannable";
     }
 
+    updateScanGuidance(designConfig);
     refreshActionState();
   } catch (error) {
     currentSvg = "";
@@ -496,6 +498,7 @@ function render() {
     targetUrlOutput.value = "";
     qrMetaOutput.value = "";
     scanStatusText.textContent = "Waiting for valid content";
+    scanGuidance.replaceChildren();
     showValidationError(error);
     setStatus(error.message, "error");
     refreshActionState();
@@ -1085,6 +1088,83 @@ function resetSizeControls() {
   captionSizeInput.value = "6";
   render();
   setStatus("Size controls reset.", "success");
+}
+
+function updateScanGuidance(config) {
+  const checks = getScanGuidance(config);
+  scanGuidance.replaceChildren(
+    ...checks.map((check) => {
+      const item = document.createElement("li");
+      item.dataset.tone = check.tone;
+      item.textContent = check.label;
+      return item;
+    })
+  );
+
+  const hasWarning = checks.some((check) => check.tone === "warning");
+  if (hasWarning) {
+    scanStatusText.textContent = "Review scan checks";
+  }
+}
+
+function getScanGuidance(config) {
+  const contrast = Math.min(
+    contrastRatio(config.foreground, config.background),
+    config.colorMode === "gradient"
+      ? contrastRatio(config.foregroundSecondary, config.background)
+      : Number.POSITIVE_INFINITY
+  );
+  const checks = [
+    contrast >= 4.5
+      ? { tone: "success", label: `Contrast ${contrast.toFixed(1)}:1` }
+      : { tone: "warning", label: `Low contrast ${contrast.toFixed(1)}:1` },
+    Number(config.margin) >= 4
+      ? { tone: "success", label: "Quiet zone OK" }
+      : { tone: "warning", label: "Increase quiet zone" }
+  ];
+
+  if (config.colorMode === "gradient") {
+    checks.push({ tone: "warning", label: "Test gradient scans" });
+  }
+
+  if (config.logo !== "none") {
+    checks.push({ tone: "success", label: "High EC for logo" });
+    if (Number(config.logoSize) > 28) {
+      checks.push({ tone: "warning", label: "Logo may be large" });
+    }
+  }
+
+  return checks;
+}
+
+function contrastRatio(firstColor, secondColor) {
+  const first = relativeLuminance(firstColor);
+  const second = relativeLuminance(secondColor);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function relativeLuminance(color) {
+  const channels = parseHexColor(color).map((channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+function parseHexColor(color) {
+  const match = String(color || "").match(/^#([0-9a-f]{6})$/i);
+  if (!match) {
+    return [0, 0, 0];
+  }
+  return [
+    Number.parseInt(match[1].slice(0, 2), 16),
+    Number.parseInt(match[1].slice(2, 4), 16),
+    Number.parseInt(match[1].slice(4, 6), 16)
+  ];
 }
 
 function setDesignsMenuOpen(open) {
