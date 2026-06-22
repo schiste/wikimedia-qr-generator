@@ -19,6 +19,21 @@ body {
   background: var(--app-bg, #0a0f1a);
 }
 
+html.modal-open,
+html.modal-open body {
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 button,
 input,
 select {

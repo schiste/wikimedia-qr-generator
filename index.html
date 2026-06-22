@@ -596,14 +596,15 @@
         </main>
       </div>
 
-      <div class="library-dialog-backdrop is-hidden" id="logo-library-dialog" role="presentation">
-        <section class="library-dialog" role="dialog" aria-modal="true" aria-labelledby="logo-library-title">
+      <div class="library-dialog-backdrop is-hidden" id="logo-library-dialog" role="presentation" aria-hidden="true">
+        <section class="library-dialog" role="dialog" aria-modal="true" aria-labelledby="logo-library-title" aria-describedby="logo-library-description">
           <header class="library-dialog-header">
             <div>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M4 5h6v14H4zM14 5h6v14h-6zM10 8h4M10 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
               </svg>
               <h2 id="logo-library-title">Logo library</h2>
+              <p class="sr-only" id="logo-library-description">Search and choose a Wikimedia logo to place in the center of the QR code.</p>
             </div>
             <button class="library-close-button" id="close-logo-library" type="button" aria-label="Close logo library">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

@@ -121,6 +121,11 @@ const advancedBulkGenerateButton = document.querySelector("#advanced-bulk-genera
 const advancedBulkProgress = document.querySelector("#advanced-bulk-progress");
 const advancedBulkStatus = document.querySelector("#advanced-bulk-status");
 const validationErrorOutputs = document.querySelectorAll("[data-validation-error-for]");
+const modalBackgroundElements = [
+  document.querySelector(".top-band"),
+  document.querySelector(".app-body"),
+  document.querySelector(".app-footer")
+].filter(Boolean);
 
 const STORAGE_VERSION = 1;
 const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
@@ -219,6 +224,7 @@ let designsMenuOpen = false;
 let appPickerOpen = false;
 let appPickerMenu = null;
 let actionBusy = false;
+let logoLibraryReturnFocus = null;
 
 for (const element of [
   qrUrlInput,
@@ -310,6 +316,11 @@ document.addEventListener("keydown", (event) => {
     setAppPickerOpen(false);
     setDesignsMenuOpen(false);
     closeLogoLibrary();
+    return;
+  }
+
+  if (event.key === "Tab" && isLogoLibraryOpen()) {
+    trapLogoLibraryFocus(event);
   }
 });
 
@@ -670,13 +681,68 @@ function initializeLogoLibraryFilters() {
 }
 
 function openLogoLibrary() {
+  logoLibraryReturnFocus = document.activeElement;
   logoLibraryDialog.classList.remove("is-hidden");
+  logoLibraryDialog.setAttribute("aria-hidden", "false");
+  setBackgroundInert(true);
   renderLogoLibrary();
   window.setTimeout(() => logoLibrarySearchInput.focus(), 0);
 }
 
 function closeLogoLibrary() {
+  if (!isLogoLibraryOpen()) {
+    return;
+  }
   logoLibraryDialog.classList.add("is-hidden");
+  logoLibraryDialog.setAttribute("aria-hidden", "true");
+  setBackgroundInert(false);
+  logoLibraryReturnFocus?.focus?.();
+  logoLibraryReturnFocus = null;
+}
+
+function isLogoLibraryOpen() {
+  return !logoLibraryDialog.classList.contains("is-hidden");
+}
+
+function setBackgroundInert(inert) {
+  document.documentElement.classList.toggle("modal-open", inert);
+  for (const element of modalBackgroundElements) {
+    element.inert = inert;
+    element.setAttribute("aria-hidden", String(inert));
+  }
+}
+
+function trapLogoLibraryFocus(event) {
+  const focusable = getFocusableElements(logoLibraryDialog);
+  if (focusable.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const active = document.activeElement;
+
+  if (event.shiftKey && active === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function getFocusableElements(container) {
+  return [...container.querySelectorAll(
+    [
+      "a[href]",
+      "button:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])"
+    ].join(",")
+  )].filter((element) => element.offsetParent !== null || element === document.activeElement);
 }
 
 function renderLogoLibrary() {
