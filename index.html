@@ -161,14 +161,16 @@
               <div class="content-fields" data-content-panel="url">
                 <label class="field field--wide">
                   <span>URL</span>
-                  <input id="qr-url" name="qr-url" type="url" inputmode="url" value="https://www.wikimedia.org/" spellcheck="false">
+                  <input id="qr-url" name="qr-url" type="url" inputmode="url" value="https://www.wikimedia.org/" spellcheck="false" aria-describedby="qr-url-error">
+                  <p class="field-error" id="qr-url-error" data-validation-error-for="qr-url"></p>
                 </label>
               </div>
 
               <div class="content-fields is-hidden" data-content-panel="text">
                 <label class="field field--wide">
                   <span>Text</span>
-                  <textarea id="qr-text" name="qr-text" rows="4" placeholder="Type or paste text here..." spellcheck="true"></textarea>
+                  <textarea id="qr-text" name="qr-text" rows="4" placeholder="Type or paste text here..." spellcheck="true" aria-describedby="qr-text-error"></textarea>
+                  <p class="field-error" id="qr-text-error" data-validation-error-for="qr-text"></p>
                 </label>
               </div>
 
@@ -176,7 +178,8 @@
                 <div class="field-group">
                   <label class="field field--wide">
                     <span>Email address</span>
-                    <input id="email-to" name="email-to" type="email" inputmode="email" placeholder="name@example.org" spellcheck="false">
+                    <input id="email-to" name="email-to" type="email" inputmode="email" placeholder="name@example.org" spellcheck="false" autocomplete="email" aria-describedby="email-to-error">
+                    <p class="field-error" id="email-to-error" data-validation-error-for="email-to"></p>
                   </label>
                   <label class="field field--wide">
                     <span>Subject</span>
@@ -193,7 +196,8 @@
                 <div class="field-group">
                   <label class="field field--wide">
                     <span>Phone number</span>
-                    <input id="sms-number" name="sms-number" type="tel" inputmode="tel" placeholder="+33123456789">
+                    <input id="sms-number" name="sms-number" type="tel" inputmode="tel" placeholder="+33123456789" autocomplete="tel" aria-describedby="sms-number-error">
+                    <p class="field-error" id="sms-number-error" data-validation-error-for="sms-number"></p>
                   </label>
                   <label class="field field--wide">
                     <span>Message</span>
@@ -206,11 +210,13 @@
                 <div class="field-group">
                   <label class="field field--wide">
                     <span>Network name</span>
-                    <input id="wifi-ssid" name="wifi-ssid" type="text" autocomplete="off" placeholder="SSID">
+                    <input id="wifi-ssid" name="wifi-ssid" type="text" autocomplete="off" placeholder="SSID" aria-describedby="wifi-ssid-error">
+                    <p class="field-error" id="wifi-ssid-error" data-validation-error-for="wifi-ssid"></p>
                   </label>
                   <label class="field">
                     <span>Password</span>
-                    <input id="wifi-password" name="wifi-password" type="password" autocomplete="new-password" placeholder="Password">
+                    <input id="wifi-password" name="wifi-password" type="password" autocomplete="new-password" placeholder="Password" aria-describedby="wifi-password-error">
+                    <p class="field-error" id="wifi-password-error" data-validation-error-for="wifi-password"></p>
                   </label>
                   <label class="field">
                     <span>Encryption</span>

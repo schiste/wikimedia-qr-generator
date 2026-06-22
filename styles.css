@@ -796,6 +796,26 @@ a:focus-visible {
   accent-color: var(--accent);
 }
 
+.field-error {
+  display: none;
+  margin: -2px 0 0;
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.field-error.is-visible {
+  display: block;
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"],
+.field select[aria-invalid="true"] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 18%, transparent);
+}
+
 .checkbox-row {
   display: flex;
   min-width: 0;
@@ -1486,6 +1506,28 @@ a:focus-visible {
 .qr-stage:hover > svg {
   filter: drop-shadow(0 22px 44px rgba(2, 6, 23, 0.42));
   transform: translateY(-2px);
+}
+
+.qr-empty-state {
+  display: grid;
+  max-width: 280px;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  color: var(--muted);
+  padding: 18px;
+  text-align: center;
+}
+
+.qr-empty-state strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.qr-empty-state span {
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .canvas-metadata {

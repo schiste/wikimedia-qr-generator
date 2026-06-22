@@ -120,6 +120,7 @@ const advancedBulkValidateButton = document.querySelector("#advanced-bulk-valida
 const advancedBulkGenerateButton = document.querySelector("#advanced-bulk-generate");
 const advancedBulkProgress = document.querySelector("#advanced-bulk-progress");
 const advancedBulkStatus = document.querySelector("#advanced-bulk-status");
+const validationErrorOutputs = document.querySelectorAll("[data-validation-error-for]");
 
 const STORAGE_VERSION = 1;
 const STORAGE_KEY = `wikimediaQr.customPresets.v${STORAGE_VERSION}`;
@@ -195,6 +196,13 @@ const QR_PRESETS = {
     foregroundSecondary: "#14866d",
     background: "#ffffff"
   }
+};
+const PRIMARY_FIELD_BY_CONTENT_TYPE = {
+  url: "qr-url",
+  text: "qr-text",
+  email: "email-to",
+  sms: "sms-number",
+  wifi: "wifi-ssid"
 };
 
 let contentType = "url";
@@ -415,6 +423,7 @@ function render() {
     qrStage.innerHTML = previewSvg;
     targetUrlOutput.value = content.label;
     qrMetaOutput.value = `v${qrAsset.qr.version} / ${qrAsset.qr.size} modules / EC ${qrAsset.qr.errorCorrection}`;
+    clearValidationErrors();
 
     if (designConfig.logo !== "none") {
       setStatus(
@@ -436,10 +445,11 @@ function render() {
   } catch (error) {
     currentSvg = "";
     currentUrl = "";
-    qrStage.innerHTML = "";
+    renderEmptyPreview(error.message);
     targetUrlOutput.value = "";
     qrMetaOutput.value = "";
     scanStatusText.textContent = "Waiting for valid content";
+    showValidationError(error);
     setStatus(error.message, "error");
     refreshActionState();
   }
@@ -490,17 +500,17 @@ function compileContentPayload() {
 }
 
 function compileUrlPayload() {
-  const payload = normalizeDirectUrl(qrUrlInput.value);
+  const payload = withField("qr-url", () => normalizeDirectUrl(qrUrlInput.value));
   return { payload, label: payload };
 }
 
 function compileTextPayload() {
-  const payload = requiredString(qrTextInput.value, "Enter text for the QR code.");
+  const payload = requiredString(qrTextInput.value, "Enter text for the QR code.", "qr-text");
   return { payload, label: summarize(payload, "Text") };
 }
 
 function compileEmailPayload() {
-  const to = requiredString(emailToInput.value, "Enter an email address.");
+  const to = requiredString(emailToInput.value, "Enter an email address.", "email-to");
   const subject = emailSubjectInput.value.trim();
   const body = emailBodyInput.value.trim();
   const params = new URLSearchParams();
@@ -517,18 +527,18 @@ function compileEmailPayload() {
 }
 
 function compileSmsPayload() {
-  const number = normalizePhoneNumber(requiredString(smsNumberInput.value, "Enter a phone number."));
+  const number = normalizePhoneNumber(requiredString(smsNumberInput.value, "Enter a phone number.", "sms-number"));
   const message = smsMessageInput.value.trim();
   const payload = `sms:${number}${message ? `?&body=${encodeURIComponent(message)}` : ""}`;
   return { payload, label: `SMS: ${number}` };
 }
 
 function compileWifiPayload() {
-  const ssid = requiredString(wifiSsidInput.value, "Enter a WiFi network name.");
+  const ssid = requiredString(wifiSsidInput.value, "Enter a WiFi network name.", "wifi-ssid");
   const encryption = wifiEncryptionInput.value;
   const password = wifiPasswordInput.value;
   if (encryption !== "nopass" && !password) {
-    throw new Error("Enter a WiFi password or choose no encryption.");
+    throw validationError("Enter a WiFi password or choose no encryption.", "wifi-password");
   }
   const hidden = wifiHiddenInput.checked ? "true" : "false";
   const payload = [
@@ -551,12 +561,27 @@ function normalizePhoneNumber(value) {
   return String(value || "").trim().replace(/[()\s.-]/g, "");
 }
 
-function requiredString(value, message) {
+function requiredString(value, message, fieldId) {
   const trimmed = String(value || "").trim();
   if (!trimmed) {
-    throw new Error(message);
+    throw validationError(message, fieldId);
   }
   return trimmed;
+}
+
+function validationError(message, fieldId) {
+  const error = new Error(message);
+  error.fieldId = fieldId;
+  return error;
+}
+
+function withField(fieldId, task) {
+  try {
+    return task();
+  } catch (error) {
+    error.fieldId = error.fieldId || fieldId;
+    throw error;
+  }
 }
 
 function escapeWifiValue(value) {
@@ -1283,6 +1308,44 @@ function booleanValue(value, fallback) {
 function removeObjectKey(object, key) {
   const { [key]: removed, ...rest } = object;
   return rest;
+}
+
+function clearValidationErrors() {
+  for (const output of validationErrorOutputs) {
+    output.textContent = "";
+    output.classList.remove("is-visible");
+    const field = document.querySelector(`#${output.dataset.validationErrorFor}`);
+    field?.removeAttribute("aria-invalid");
+  }
+}
+
+function showValidationError(error) {
+  clearValidationErrors();
+  const fieldId = error.fieldId || PRIMARY_FIELD_BY_CONTENT_TYPE[contentType];
+  const field = fieldId ? document.querySelector(`#${fieldId}`) : null;
+  const output = fieldId ? document.querySelector(`[data-validation-error-for="${fieldId}"]`) : null;
+
+  field?.setAttribute("aria-invalid", "true");
+  if (output) {
+    output.textContent = error.message || "Enter valid QR content.";
+    output.classList.add("is-visible");
+  }
+}
+
+function renderEmptyPreview(message) {
+  qrStage.replaceChildren();
+
+  const empty = document.createElement("div");
+  empty.className = "qr-empty-state";
+
+  const title = document.createElement("strong");
+  title.textContent = "QR preview paused";
+
+  const copy = document.createElement("span");
+  copy.textContent = message || "Enter valid content to generate a scannable QR code.";
+
+  empty.append(title, copy);
+  qrStage.append(empty);
 }
 
 function setStatus(message, tone) {
