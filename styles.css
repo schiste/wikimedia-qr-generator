@@ -2219,7 +2219,10 @@ a.mobile-edit-link:hover {
   }
 
   .canvas-stage {
+    flex-direction: column;
     min-height: 440px;
+    align-items: center;
+    gap: 12px;
     padding: 18px;
   }
 
@@ -2231,7 +2234,9 @@ a.mobile-edit-link:hover {
 
   .canvas-metadata {
     position: static;
-    margin: 0 14px 14px;
+    align-self: stretch;
+    justify-content: flex-start;
+    margin: 0;
   }
 
   .app-footer {
