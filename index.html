@@ -607,6 +607,34 @@
         </main>
       </div>
 
+      <div class="app-dialog-backdrop is-hidden" id="save-design-dialog" role="presentation" aria-hidden="true">
+        <section class="app-dialog" role="dialog" aria-modal="true" aria-labelledby="save-design-title">
+          <form class="app-dialog-form" id="save-design-form">
+            <header class="app-dialog-header">
+              <h2 id="save-design-title">Save design</h2>
+              <button class="library-close-button" id="cancel-save-design-x" type="button" aria-label="Close save design dialog">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </header>
+
+            <div class="app-dialog-body">
+              <label class="field">
+                <span>Design name</span>
+                <input id="save-design-name" type="text" autocomplete="off" maxlength="80" aria-describedby="save-design-name-error">
+                <p class="field-error" id="save-design-name-error"></p>
+              </label>
+            </div>
+
+            <div class="app-dialog-actions">
+              <button class="secondary-action" id="cancel-save-design" type="button">Cancel</button>
+              <button class="primary-action" type="submit">Save design</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
       <div class="library-dialog-backdrop is-hidden" id="logo-library-dialog" role="presentation" aria-hidden="true">
         <section class="library-dialog" role="dialog" aria-modal="true" aria-labelledby="logo-library-title" aria-describedby="logo-library-description">
           <header class="library-dialog-header">

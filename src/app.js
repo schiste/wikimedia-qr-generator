@@ -44,6 +44,12 @@ const designsCount = document.querySelector("#designs-count");
 const designsEmpty = document.querySelector("#designs-empty");
 const designsList = document.querySelector("#designs-list");
 const saveDesignButton = document.querySelector("#save-design");
+const saveDesignDialog = document.querySelector("#save-design-dialog");
+const saveDesignForm = document.querySelector("#save-design-form");
+const saveDesignNameInput = document.querySelector("#save-design-name");
+const saveDesignNameError = document.querySelector("#save-design-name-error");
+const cancelSaveDesignButton = document.querySelector("#cancel-save-design");
+const cancelSaveDesignXButton = document.querySelector("#cancel-save-design-x");
 const importDesignsInput = document.querySelector("#import-designs");
 const exportDesignsButton = document.querySelector("#export-designs");
 const refreshQrButton = document.querySelector("#refresh-qr");
@@ -228,6 +234,7 @@ let appPickerOpen = false;
 let appPickerMenu = null;
 let actionBusy = false;
 let logoLibraryReturnFocus = null;
+let saveDesignReturnFocus = null;
 
 for (const element of [
   qrUrlInput,
@@ -275,7 +282,10 @@ for (const button of contentTypeButtons) {
 appPickerButton.addEventListener("click", () => setAppPickerOpen(!appPickerOpen));
 designsMenuButton.addEventListener("click", () => setDesignsMenuOpen(!designsMenuOpen));
 designActionsMenuButton.addEventListener("click", () => setDesignActionsMenuOpen(!designActionsMenuOpen));
-saveDesignButton.addEventListener("click", handleSaveDesign);
+saveDesignButton.addEventListener("click", openSaveDesignDialog);
+saveDesignForm.addEventListener("submit", handleSaveDesign);
+cancelSaveDesignButton.addEventListener("click", closeSaveDesignDialog);
+cancelSaveDesignXButton.addEventListener("click", closeSaveDesignDialog);
 importDesignsInput.addEventListener("change", handleImportDesigns);
 exportDesignsButton.addEventListener("click", exportDesigns);
 refreshQrButton.addEventListener("click", () => {
@@ -290,6 +300,11 @@ closeLogoLibraryButton.addEventListener("click", closeLogoLibrary);
 logoLibraryDialog.addEventListener("mousedown", (event) => {
   if (event.target === logoLibraryDialog) {
     closeLogoLibrary();
+  }
+});
+saveDesignDialog.addEventListener("mousedown", (event) => {
+  if (event.target === saveDesignDialog) {
+    closeSaveDesignDialog();
   }
 });
 logoLibrarySearchInput.addEventListener("input", () => {
@@ -323,12 +338,18 @@ document.addEventListener("keydown", (event) => {
     setAppPickerOpen(false);
     setDesignsMenuOpen(false);
     setDesignActionsMenuOpen(false);
+    closeSaveDesignDialog();
     closeLogoLibrary();
     return;
   }
 
+  if (event.key === "Tab" && isSaveDesignDialogOpen()) {
+    trapDialogFocus(saveDesignDialog, event);
+    return;
+  }
+
   if (event.key === "Tab" && isLogoLibraryOpen()) {
-    trapLogoLibraryFocus(event);
+    trapDialogFocus(logoLibraryDialog, event);
   }
 });
 
@@ -720,8 +741,8 @@ function setBackgroundInert(inert) {
   }
 }
 
-function trapLogoLibraryFocus(event) {
-  const focusable = getFocusableElements(logoLibraryDialog);
+function trapDialogFocus(container, event) {
+  const focusable = getFocusableElements(container);
   if (focusable.length === 0) {
     event.preventDefault();
     return;
@@ -751,6 +772,44 @@ function getFocusableElements(container) {
       "[tabindex]:not([tabindex='-1'])"
     ].join(",")
   )].filter((element) => element.offsetParent !== null || element === document.activeElement);
+}
+
+function openSaveDesignDialog() {
+  saveDesignReturnFocus = document.activeElement;
+  saveDesignNameInput.value = "";
+  clearSaveDesignNameError();
+  setDesignActionsMenuOpen(false);
+  saveDesignDialog.classList.remove("is-hidden");
+  saveDesignDialog.setAttribute("aria-hidden", "false");
+  setBackgroundInert(true);
+  window.setTimeout(() => saveDesignNameInput.focus(), 0);
+}
+
+function closeSaveDesignDialog() {
+  if (!isSaveDesignDialogOpen()) {
+    return;
+  }
+  saveDesignDialog.classList.add("is-hidden");
+  saveDesignDialog.setAttribute("aria-hidden", "true");
+  setBackgroundInert(false);
+  saveDesignReturnFocus?.focus?.();
+  saveDesignReturnFocus = null;
+}
+
+function isSaveDesignDialogOpen() {
+  return !saveDesignDialog.classList.contains("is-hidden");
+}
+
+function clearSaveDesignNameError() {
+  saveDesignNameInput.removeAttribute("aria-invalid");
+  saveDesignNameError.textContent = "";
+  saveDesignNameError.classList.remove("is-visible");
+}
+
+function showSaveDesignNameError(message) {
+  saveDesignNameInput.setAttribute("aria-invalid", "true");
+  saveDesignNameError.textContent = message;
+  saveDesignNameError.classList.add("is-visible");
 }
 
 function renderLogoLibrary() {
@@ -1052,10 +1111,11 @@ function renderCustomDesigns() {
   }
 }
 
-function handleSaveDesign() {
-  const name = window.prompt("Name this design");
-  const trimmed = name && name.trim();
+function handleSaveDesign(event) {
+  event.preventDefault();
+  const trimmed = saveDesignNameInput.value.trim();
   if (!trimmed) {
+    showSaveDesignNameError("Enter a name for this design.");
     return;
   }
 
@@ -1073,6 +1133,7 @@ function handleSaveDesign() {
     return;
   }
   renderCustomDesigns();
+  closeSaveDesignDialog();
   setStatus(`Saved "${trimmed}".`, "success");
 }
 
@@ -1121,7 +1182,7 @@ async function handleImportDesigns(event) {
     renderCustomDesigns();
     setStatus(`Imported ${imported.length} design${imported.length === 1 ? "" : "s"}.`, "success");
   } catch (error) {
-    window.alert(error.message || "Could not import designs.");
+    setStatus(error.message || "Could not import designs.", "error");
   }
 }
 

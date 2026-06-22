@@ -1014,6 +1014,64 @@ a:focus-visible {
   padding: 18px;
 }
 
+.app-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.66);
+  padding: 18px;
+}
+
+.app-dialog {
+  width: min(420px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.app-dialog-form {
+  display: grid;
+  gap: 0;
+}
+
+.app-dialog-header {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-strong);
+  padding: 12px 14px;
+}
+
+.app-dialog-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.app-dialog-body {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.app-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  background: var(--panel-strong);
+  padding: 12px 14px;
+}
+
 .library-dialog {
   display: flex;
   width: min(980px, 100%);
@@ -2058,6 +2116,16 @@ a:focus-visible {
   .library-dialog-backdrop {
     align-items: stretch;
     padding: 10px;
+  }
+
+  .app-dialog-backdrop {
+    align-items: center;
+    padding: 14px;
+  }
+
+  .app-dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .library-dialog {
