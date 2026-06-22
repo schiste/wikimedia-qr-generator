@@ -1349,6 +1349,30 @@ a:focus-visible {
   font-size: 10px;
 }
 
+.workspace-toolbar-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-edit-link {
+  display: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.mobile-edit-link:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
 .canvas-stage {
   position: relative;
   display: flex;
@@ -1702,7 +1726,8 @@ a:focus-visible {
   }
 
   .app-body {
-    display: grid;
+    display: flex;
+    flex-direction: column;
   }
 
   .sidebar,
@@ -1713,8 +1738,13 @@ a:focus-visible {
   }
 
   .sidebar {
+    order: 2;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .workspace {
+    order: 1;
   }
 
   .canvas-stage {
@@ -1729,6 +1759,10 @@ a:focus-visible {
     max-width: 100%;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  .mobile-edit-link {
+    display: inline-flex;
   }
 }
 
@@ -1747,6 +1781,11 @@ a:focus-visible {
   .export-bar {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .workspace-toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .top-band {

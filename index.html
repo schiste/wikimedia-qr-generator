@@ -95,7 +95,7 @@
       </header>
 
       <div class="app-body">
-        <aside class="sidebar control-scrollbar" aria-label="QR controls">
+        <aside class="sidebar control-scrollbar" id="qr-controls" aria-label="QR controls">
           <form class="sidebar-body controls" id="qr-form">
             <section class="control-section" aria-labelledby="ready-presets-heading">
               <div class="section-heading">
@@ -483,7 +483,10 @@
               <span class="toolbar-label">Payload</span>
               <output class="target-url" id="target-url"></output>
             </div>
-            <output class="qr-meta" id="qr-meta"></output>
+            <div class="workspace-toolbar-actions">
+              <a class="mobile-edit-link" href="#qr-controls">Edit settings</a>
+              <output class="qr-meta" id="qr-meta"></output>
+            </div>
           </div>
 
           <section class="canvas-stage" aria-label="Generated QR code">
