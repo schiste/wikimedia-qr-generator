@@ -38,6 +38,8 @@ const appPickerButton = document.querySelector("#app-picker-button");
 const designsMenu = document.querySelector("#designs-menu");
 const designsMenuButton = document.querySelector("#designs-menu-button");
 const designsDropdown = document.querySelector("#designs-dropdown");
+const designActionsMenu = document.querySelector("#design-actions-menu");
+const designActionsMenuButton = document.querySelector("#design-actions-menu-button");
 const designsCount = document.querySelector("#designs-count");
 const designsEmpty = document.querySelector("#designs-empty");
 const designsList = document.querySelector("#designs-list");
@@ -221,6 +223,7 @@ let currentUrl = "";
 let currentPngSize = 512;
 let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
+let designActionsMenuOpen = false;
 let appPickerOpen = false;
 let appPickerMenu = null;
 let actionBusy = false;
@@ -271,6 +274,7 @@ for (const button of contentTypeButtons) {
 }
 appPickerButton.addEventListener("click", () => setAppPickerOpen(!appPickerOpen));
 designsMenuButton.addEventListener("click", () => setDesignsMenuOpen(!designsMenuOpen));
+designActionsMenuButton.addEventListener("click", () => setDesignActionsMenuOpen(!designActionsMenuOpen));
 saveDesignButton.addEventListener("click", handleSaveDesign);
 importDesignsInput.addEventListener("change", handleImportDesigns);
 exportDesignsButton.addEventListener("click", exportDesigns);
@@ -310,11 +314,15 @@ document.addEventListener("mousedown", (event) => {
   if (designsMenuOpen && !designsMenu.contains(event.target)) {
     setDesignsMenuOpen(false);
   }
+  if (designActionsMenuOpen && !designActionsMenu.contains(event.target)) {
+    setDesignActionsMenuOpen(false);
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     setAppPickerOpen(false);
     setDesignsMenuOpen(false);
+    setDesignActionsMenuOpen(false);
     closeLogoLibrary();
     return;
   }
@@ -1001,6 +1009,12 @@ function setDesignsMenuOpen(open) {
   designsMenuOpen = open;
   designsDropdown.classList.toggle("is-hidden", !open);
   designsMenuButton.setAttribute("aria-expanded", String(open));
+}
+
+function setDesignActionsMenuOpen(open) {
+  designActionsMenuOpen = open;
+  designActionsMenu.classList.toggle("is-open", open);
+  designActionsMenuButton.setAttribute("aria-expanded", String(open));
 }
 
 function renderCustomDesigns() {

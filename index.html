@@ -48,28 +48,39 @@
               </div>
             </div>
 
-            <button class="header-button" id="save-design" type="button" aria-label="Save current design">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M17 21v-8H7v8M7 3v5h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-              <span>Save</span>
-            </button>
+            <div class="design-actions-menu" id="design-actions-menu">
+              <button class="header-button design-actions-menu-button" id="design-actions-menu-button" type="button" aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 5v.01M12 12v.01M12 19v.01" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <span>Actions</span>
+              </button>
 
-            <label class="header-button">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Import</span>
-              <input id="import-designs" type="file" accept="application/json,.json" aria-label="Import designs from a JSON file">
-            </label>
+              <div class="design-actions-popover" id="design-actions-popover">
+                <button class="header-button" id="save-design" type="button" aria-label="Save current design">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M17 21v-8H7v8M7 3v5h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Save</span>
+                </button>
 
-            <button class="header-button" id="export-designs" type="button" disabled aria-label="Export designs to a JSON file">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Export</span>
-            </button>
+                <label class="header-button">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Import</span>
+                  <input id="import-designs" type="file" accept="application/json,.json" aria-label="Import designs from a JSON file">
+                </label>
+
+                <button class="header-button" id="export-designs" type="button" disabled aria-label="Export designs to a JSON file">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Export</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <button class="refresh-button" id="refresh-qr" type="button" aria-label="Refresh QR preview" title="Refresh QR preview">
