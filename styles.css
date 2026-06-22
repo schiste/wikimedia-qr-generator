@@ -1665,48 +1665,60 @@ a.mobile-edit-link:hover {
 }
 
 .export-bar {
-  display: flex;
+  display: grid;
   min-height: 0;
-  align-items: center;
+  grid-template-areas:
+    "info size bleed copy bulk"
+    "info size ink svg png";
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(90px, 112px)
+    minmax(82px, 96px)
+    minmax(62px, 78px)
+    minmax(68px, 86px);
+  align-items: stretch;
   gap: 6px 8px;
-  flex-wrap: wrap;
   border-top: 1px solid var(--line);
   background: var(--panel-strong);
   padding: 7px 24px;
 }
 
 .export-info {
-  display: flex;
-  flex: 1 1 220px;
-  align-items: center;
-  gap: 4px 8px;
-  flex-wrap: wrap;
+  grid-area: info;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  align-items: start;
+  gap: 3px;
   min-width: 0;
 }
 
 .bulk-generator {
-  flex: 0 0 auto;
-  width: fit-content;
+  grid-area: bulk;
+  min-width: 0;
+  width: 100%;
   border-top: 0;
   padding-top: 0;
 }
 
 .bulk-generator[open] {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
+  grid-row: auto;
   border-top: 1px solid var(--line-soft);
   margin-top: 2px;
   padding-top: 8px;
 }
 
 .bulk-generator > summary {
-  width: fit-content;
+  width: 100%;
   min-height: 34px;
   align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
-  padding: 0 10px;
+  padding: 0 8px;
   font-size: 12px;
   font-weight: 760;
   white-space: nowrap;
@@ -1908,6 +1920,7 @@ a.mobile-edit-link:hover {
 }
 
 .scan-guidance {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -1940,34 +1953,50 @@ a.mobile-edit-link:hover {
 }
 
 .export-controls {
-  display: flex;
-  flex: 0 1 auto;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  width: auto;
-  max-width: 100%;
-  min-width: 0;
+  display: contents;
 }
 
 .export-bar .field-row {
-  gap: 7px;
+  gap: 6px;
+}
+
+.export-size-control {
+  grid-area: size;
+  display: grid;
+  align-content: center;
+  align-items: center;
+  gap: 4px;
 }
 
 .export-bar .field-row select {
+  width: 100%;
   min-height: 34px;
-  padding: 5px 9px;
+  padding: 5px 8px;
+}
+
+.export-size-control > span {
+  font-size: 10px;
+  line-height: 1;
 }
 
 .export-bar .field-row--checkbox {
+  width: 100%;
   min-height: 34px;
-  justify-content: flex-start;
-  padding: 0 9px;
+  justify-content: center;
+  padding: 0 8px;
 }
 
 .export-bar .field-row--checkbox input {
   width: 15px;
   height: 15px;
+}
+
+.export-bleed-control {
+  grid-area: bleed;
+}
+
+.export-inkscape-control {
+  grid-area: ink;
 }
 
 .export-size-summary {
@@ -1987,28 +2016,35 @@ a.mobile-edit-link:hover {
 }
 
 .actions {
-  display: flex;
-  flex: 0 1 auto;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
-  min-width: 0;
+  display: contents;
 }
 
 .primary-action,
 .secondary-action {
   display: flex;
-  min-height: 36px;
+  width: 100%;
+  min-height: 34px;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border-radius: 8px;
-  padding: 0 13px;
+  padding: 0 8px;
   font-size: 12px;
   font-weight: 760;
   line-height: 1;
   white-space: nowrap;
+}
+
+.export-copy-action {
+  grid-area: copy;
+}
+
+.export-svg-action {
+  grid-area: svg;
+}
+
+.export-png-action {
+  grid-area: png;
 }
 
 .primary-action {
@@ -2068,28 +2104,6 @@ a.mobile-edit-link:hover {
   display: none !important;
 }
 
-@media (max-width: 1180px) and (min-width: 981px) {
-  .export-info {
-    order: 1;
-    flex: 1 1 calc(100% - 112px);
-  }
-
-  .export-controls {
-    order: 3;
-    flex: 0 1 auto;
-  }
-
-  .actions {
-    order: 4;
-    flex: 0 1 auto;
-    justify-content: flex-start;
-  }
-
-  .bulk-generator {
-    order: 2;
-  }
-}
-
 @media (max-width: 980px) {
   .app-shell {
     height: auto;
@@ -2137,25 +2151,6 @@ a.mobile-edit-link:hover {
     display: inline-flex;
   }
 
-  .export-bar {
-    align-items: flex-start;
-  }
-
-  .export-info,
-  .export-controls {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
-  .actions {
-    flex: 1 1 100%;
-    justify-content: stretch;
-  }
-
-  .actions .primary-action,
-  .actions .secondary-action {
-    flex: 1 1 0;
-  }
 }
 
 @media (max-width: 640px) {
@@ -2165,10 +2160,13 @@ a.mobile-edit-link:hover {
 
   .export-bar {
     padding-inline: 14px;
-  }
-
-  .export-bar {
-    align-items: stretch;
+    grid-template-areas:
+      "info info"
+      "size size"
+      "bleed ink"
+      "copy svg"
+      "png bulk";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .workspace-toolbar {
@@ -2261,34 +2259,6 @@ a.mobile-edit-link:hover {
 
   .central-logo-select {
     flex-basis: 100%;
-  }
-
-  .export-controls {
-    align-items: center;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .export-bar .field-row {
-    width: auto;
-  }
-
-  .export-bar .field-row:not(.field-row--checkbox) {
-    flex: 1 1 130px;
-  }
-
-  .export-bar .field-row--checkbox {
-    flex: 0 1 auto;
-  }
-
-  .bulk-generator {
-    width: fit-content;
-  }
-
-  .actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    justify-content: stretch;
   }
 
   .bulk-generator-body {

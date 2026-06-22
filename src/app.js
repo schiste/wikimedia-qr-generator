@@ -477,16 +477,16 @@ function render() {
     if (designConfig.logo !== "none") {
       setStatus(
         printBleedInput.checked
-          ? "Logo selected; high correction and print bleed are active."
-          : "Logo selected; high error correction is applied for scannability.",
+          ? "Logo + bleed ready."
+          : "Logo correction ready.",
         "success"
       );
       scanStatusText.textContent = "High correction active";
     } else if (printBleedInput.checked) {
-      setStatus("Ready to export with print bleed.", "success");
+      setStatus("Bleed ready.", "success");
       scanStatusText.textContent = "Active and scannable";
     } else {
-      setStatus("Ready to export.", "success");
+      setStatus("Ready.", "success");
       scanStatusText.textContent = "Active and scannable";
     }
 

@@ -6,8 +6,8 @@
     <meta name="description" content="Generate SVG and PNG QR codes for Wikimedia links.">
     <title>Wikimedia QR Generator</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css">
-    <script type="module" src="src/app.js"></script>
+    <link rel="stylesheet" href="styles.css?v=20260622-grid-columns">
+    <script type="module" src="src/app.js?v=20260622-grid-columns"></script>
   </head>
   <body>
     <div class="app-shell theme-light" id="app-shell">
@@ -547,7 +547,7 @@
             </div>
 
             <div class="export-controls" aria-label="Export settings">
-              <label class="field-row">
+              <label class="field-row export-size-control">
                 <span>Size</span>
                 <select id="export-size">
                   <option value="300">300 px</option>
@@ -556,25 +556,25 @@
                 </select>
               </label>
               <output class="export-size-summary" id="export-size-summary">PNG 660 x 660 px</output>
-              <label class="field-row field-row--checkbox">
+              <label class="field-row field-row--checkbox export-bleed-control">
                 <input id="print-bleed" type="checkbox" checked>
                 <span>Bleed</span>
               </label>
-              <label class="field-row field-row--checkbox">
+              <label class="field-row field-row--checkbox export-inkscape-control">
                 <input id="inkscape-svg" type="checkbox">
                 <span>Inkscape</span>
               </label>
             </div>
 
             <div class="actions">
-              <button class="secondary-action" id="copy-svg" type="button" aria-label="Copy SVG" title="Copy SVG">Copy</button>
-              <button class="secondary-action" id="download-svg" type="button" aria-label="Download SVG" title="Download SVG">SVG</button>
-              <button class="primary-action" id="download-png" type="button" aria-label="Download PNG" title="Download PNG">PNG</button>
+              <button class="secondary-action export-copy-action" id="copy-svg" type="button" aria-label="Copy SVG" title="Copy SVG">Copy</button>
+              <button class="secondary-action export-svg-action" id="download-svg" type="button" aria-label="Download SVG" title="Download SVG">SVG</button>
+              <button class="primary-action export-png-action" id="download-png" type="button" aria-label="Download PNG" title="Download PNG">PNG</button>
             </div>
 
             <details class="bulk-generator">
-              <summary>
-                <span>Bulk ZIP</span>
+              <summary title="Bulk ZIP generation">
+                <span>Bulk</span>
                 <small>Create ZIPs from URL lists or CSV rows</small>
               </summary>
 
