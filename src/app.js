@@ -389,14 +389,12 @@ function setAppPickerOpen(open) {
 function renderAppPickerMenu() {
   const menu = document.createElement("div");
   menu.className = "app-picker-menu";
-  menu.setAttribute("role", "menu");
-  menu.setAttribute("aria-label", "Wikimedia generator picker");
+  menu.id = "app-picker-menu";
 
   for (const option of APP_PICKER_OPTIONS) {
     const link = document.createElement("a");
     link.className = `app-picker-option${option.current ? " app-picker-option-current" : ""}`;
     link.href = option.href;
-    link.setAttribute("role", "menuitem");
     if (option.current) {
       link.setAttribute("aria-current", "page");
     }
@@ -1205,7 +1203,6 @@ function renderCustomDesigns() {
     const applyButton = document.createElement("button");
     applyButton.type = "button";
     applyButton.className = "designs-apply";
-    applyButton.setAttribute("role", "menuitem");
     applyButton.textContent = preset.name;
     applyButton.addEventListener("click", () => {
       applyDesignConfig(preset.config);
