@@ -1668,27 +1668,52 @@ a.mobile-edit-link:hover {
   display: grid;
   min-height: 0;
   grid-template-areas:
-    "info size bleed copy bulk"
-    "info size ink svg png";
-  grid-template-columns:
-    minmax(150px, 1fr)
-    minmax(90px, 112px)
-    minmax(82px, 96px)
-    minmax(62px, 78px)
-    minmax(68px, 86px);
-  align-items: stretch;
-  gap: 6px 8px;
+    "info actions"
+    "bulk bulk";
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 18px;
   border-top: 1px solid var(--line);
   background: var(--panel-strong);
-  padding: 7px 24px;
+  padding: 10px 24px;
 }
 
 .export-info {
   grid-area: info;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.export-icon {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: center;
-  align-items: start;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, 7px);
+  grid-template-rows: repeat(2, 7px);
+  place-content: center;
+  gap: 4px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent-fill) 10%, var(--surface));
+  color: var(--accent);
+}
+
+.export-icon span {
+  border: 2px solid currentColor;
+  border-radius: 2px;
+}
+
+.export-icon span:nth-child(2),
+.export-icon span:nth-child(3) {
+  border-width: 0;
+  background: currentColor;
+}
+
+.export-info-copy {
+  display: grid;
   gap: 3px;
   min-width: 0;
 }
@@ -1697,40 +1722,8 @@ a.mobile-edit-link:hover {
   grid-area: bulk;
   min-width: 0;
   width: 100%;
-  border-top: 0;
-  padding-top: 0;
-}
-
-.bulk-generator[open] {
-  grid-column: 1 / -1;
-  grid-row: auto;
   border-top: 1px solid var(--line-soft);
-  margin-top: 2px;
-  padding-top: 8px;
-}
-
-.bulk-generator > summary {
-  width: 100%;
-  min-height: 34px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 760;
-  white-space: nowrap;
-}
-
-.bulk-generator > summary span {
-  flex: 0 0 auto;
-  font-size: 12px;
-}
-
-.bulk-generator > summary small {
-  display: none;
+  padding-top: 10px;
 }
 
 .bulk-generator-body {
@@ -1738,7 +1731,7 @@ a.mobile-edit-link:hover {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .bulk-url-field {
@@ -1898,17 +1891,28 @@ a.mobile-edit-link:hover {
   flex: 0 0 auto;
   align-items: center;
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.export-meta-summary {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.15;
   white-space: nowrap;
 }
 
 .status-line {
-  flex: 0 1 auto;
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.2;
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .status-line[data-tone="error"] {
@@ -1920,13 +1924,14 @@ a.mobile-edit-link:hover {
 }
 
 .scan-guidance {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .scan-guidance li {
@@ -1953,7 +1958,8 @@ a.mobile-edit-link:hover {
 }
 
 .export-controls {
-  display: contents;
+  display: grid;
+  gap: 10px;
 }
 
 .export-bar .field-row {
@@ -1961,11 +1967,10 @@ a.mobile-edit-link:hover {
 }
 
 .export-size-control {
-  grid-area: size;
   display: grid;
   align-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .export-bar .field-row select {
@@ -1975,15 +1980,15 @@ a.mobile-edit-link:hover {
 }
 
 .export-size-control > span {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
 }
 
 .export-bar .field-row--checkbox {
   width: 100%;
   min-height: 34px;
-  justify-content: center;
-  padding: 0 8px;
+  justify-content: space-between;
+  padding: 0 10px;
 }
 
 .export-bar .field-row--checkbox input {
@@ -1991,17 +1996,7 @@ a.mobile-edit-link:hover {
   height: 15px;
 }
 
-.export-bleed-control {
-  grid-area: bleed;
-}
-
-.export-inkscape-control {
-  grid-area: ink;
-}
-
 .export-size-summary {
-  display: none;
-  flex: 0 0 auto;
   color: var(--muted);
   font-size: 11px;
   font-weight: 650;
@@ -2009,42 +2004,110 @@ a.mobile-edit-link:hover {
   white-space: nowrap;
 }
 
-@media (min-width: 1500px) {
-  .export-size-summary {
-    display: block;
-  }
-}
-
 .actions {
-  display: contents;
+  grid-area: actions;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
 }
 
 .primary-action,
 .secondary-action {
-  display: flex;
-  width: 100%;
-  min-height: 34px;
+  display: inline-flex;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border-radius: 8px;
-  padding: 0 8px;
+  padding: 0 16px;
   font-size: 12px;
   font-weight: 760;
   line-height: 1;
   white-space: nowrap;
 }
 
-.export-copy-action {
-  grid-area: copy;
+.icon-action {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0;
 }
 
-.export-svg-action {
-  grid-area: svg;
+.icon-action:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.icon-action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.export-settings-menu {
+  position: relative;
+}
+
+.export-settings-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 30;
+  display: none;
+  width: min(286px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  padding: 16px 18px;
+}
+
+.export-settings-menu.opens-up .export-settings-popover {
+  top: auto;
+  bottom: calc(100% + 12px);
+}
+
+.export-settings-menu.is-open .export-settings-popover {
+  display: grid;
+  gap: 12px;
+}
+
+.export-popover-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 10px;
+}
+
+.export-popover-header strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.export-popover-header span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.export-controls .export-svg-action {
+  width: 100%;
 }
 
 .export-png-action {
-  grid-area: png;
+  min-width: 144px;
 }
 
 .primary-action {
@@ -2161,12 +2224,33 @@ a.mobile-edit-link:hover {
   .export-bar {
     padding-inline: 14px;
     grid-template-areas:
-      "info info"
-      "size size"
-      "bleed ink"
-      "copy svg"
-      "png bulk";
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+      "info"
+      "actions"
+      "bulk";
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) minmax(0, 1fr) minmax(118px, 1.4fr);
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .export-settings-menu,
+  .export-copy-action,
+  .bulk-toggle-button,
+  .export-png-action {
+    width: 100%;
+  }
+
+  .export-settings-popover {
+    right: auto;
+    left: 0;
+  }
+
+  .export-png-action {
+    min-width: 0;
   }
 
   .workspace-toolbar {
@@ -2280,7 +2364,7 @@ a.mobile-edit-link:hover {
   .primary-action,
   .secondary-action {
     width: 100%;
-    padding: 0 12px;
+    padding: 0 10px;
   }
 
   .library-dialog-backdrop {

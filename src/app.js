@@ -115,6 +115,10 @@ const qrMetaOutput = document.querySelector("#qr-meta");
 const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
 const scanGuidance = document.querySelector("#scan-guidance");
+const exportSettingsMenu = document.querySelector("#export-settings-menu");
+const exportSettingsButton = document.querySelector("#export-settings-button");
+const exportSettingsPopover = document.querySelector("#export-settings-popover");
+const exportMetaSummary = document.querySelector("#export-meta-summary");
 const exportSizeInput = document.querySelector("#export-size");
 const exportSizeSummary = document.querySelector("#export-size-summary");
 const marginValueOutput = document.querySelector("#margin-value");
@@ -125,6 +129,8 @@ const inkscapeSvgInput = document.querySelector("#inkscape-svg");
 const copySvgButton = document.querySelector("#copy-svg");
 const downloadSvgButton = document.querySelector("#download-svg");
 const downloadPngButton = document.querySelector("#download-png");
+const bulkToggleButton = document.querySelector("#bulk-toggle");
+const bulkPanel = document.querySelector("#bulk-generator-panel");
 const bulkUrlsInput = document.querySelector("#bulk-urls");
 const bulkGenerateButton = document.querySelector("#bulk-generate");
 const bulkStatus = document.querySelector("#bulk-status");
@@ -238,6 +244,7 @@ let customDesigns = readCustomDesigns();
 let designsMenuOpen = false;
 let designActionsMenuOpen = false;
 let appPickerOpen = false;
+let exportSettingsOpen = false;
 let appPickerMenu = null;
 let actionBusy = false;
 let logoLibraryReturnFocus = null;
@@ -290,6 +297,7 @@ for (const button of contentTypeButtons) {
 appPickerButton.addEventListener("click", () => setAppPickerOpen(!appPickerOpen));
 designsMenuButton.addEventListener("click", () => setDesignsMenuOpen(!designsMenuOpen));
 designActionsMenuButton.addEventListener("click", () => setDesignActionsMenuOpen(!designActionsMenuOpen));
+exportSettingsButton.addEventListener("click", () => setExportSettingsOpen(!exportSettingsOpen));
 saveDesignButton.addEventListener("click", openSaveDesignDialog);
 saveDesignForm.addEventListener("submit", handleSaveDesign);
 cancelSaveDesignButton.addEventListener("click", closeSaveDesignDialog);
@@ -322,8 +330,12 @@ logoLibrarySearchInput.addEventListener("input", () => {
 printBleedInput.addEventListener("change", render);
 inkscapeSvgInput.addEventListener("change", render);
 copySvgButton.addEventListener("click", () => runExportAction(copySvg));
-downloadSvgButton.addEventListener("click", () => runExportAction(downloadSvg));
+downloadSvgButton.addEventListener("click", () => {
+  setExportSettingsOpen(false);
+  runExportAction(downloadSvg);
+});
 downloadPngButton.addEventListener("click", () => runExportAction(() => downloadPng(Number(exportSizeInput.value))));
+bulkToggleButton.addEventListener("click", () => setBulkPanelOpen(bulkPanel.classList.contains("is-hidden")));
 bulkGenerateButton.addEventListener("click", runBulkGeneration);
 advancedBulkFileInput.addEventListener("change", handleAdvancedBulkFile);
 advancedBulkTemplateButton.addEventListener("click", downloadAdvancedBulkTemplate);
@@ -341,12 +353,16 @@ document.addEventListener("mousedown", (event) => {
   if (designActionsMenuOpen && !designActionsMenu.contains(event.target)) {
     setDesignActionsMenuOpen(false);
   }
+  if (exportSettingsOpen && !exportSettingsMenu.contains(event.target)) {
+    setExportSettingsOpen(false);
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     setAppPickerOpen(false);
     setDesignsMenuOpen(false);
     setDesignActionsMenuOpen(false);
+    setExportSettingsOpen(false);
     closeSaveDesignDialog();
     closeLogoLibrary();
     return;
@@ -361,6 +377,11 @@ document.addEventListener("keydown", (event) => {
     trapDialogFocus(logoLibraryDialog, event);
   }
 });
+window.addEventListener("resize", () => {
+  if (exportSettingsOpen) {
+    positionExportSettingsPopover();
+  }
+});
 
 initializeLogoSelect();
 initializeLogoLibraryFilters();
@@ -369,6 +390,34 @@ initializePresets();
 renderCustomDesigns();
 setTheme(localStorage.getItem("wikimedia-qr-theme") || "light");
 setContentType("url");
+
+function setExportSettingsOpen(open) {
+  exportSettingsOpen = open;
+  exportSettingsMenu.classList.toggle("is-open", open);
+  exportSettingsButton.setAttribute("aria-expanded", String(open));
+
+  if (open) {
+    setAppPickerOpen(false);
+    setDesignsMenuOpen(false);
+    setDesignActionsMenuOpen(false);
+    positionExportSettingsPopover();
+  } else {
+    exportSettingsMenu.classList.remove("opens-up");
+  }
+}
+
+function positionExportSettingsPopover() {
+  exportSettingsMenu.classList.remove("opens-up");
+  const rect = exportSettingsPopover.getBoundingClientRect();
+  if (rect.bottom > window.innerHeight - 12) {
+    exportSettingsMenu.classList.add("opens-up");
+  }
+}
+
+function setBulkPanelOpen(open) {
+  bulkPanel.classList.toggle("is-hidden", !open);
+  bulkToggleButton.setAttribute("aria-expanded", String(open));
+}
 
 function setAppPickerOpen(open) {
   appPickerOpen = open;
@@ -1110,6 +1159,8 @@ function updateScanGuidance(config) {
 
 function updateExportSizeSummary(config) {
   const dimensions = getExportPixelSize(Number(config.exportSize), config.printBleed);
+  const bleedState = dimensions.bleed > 0 ? "Bleed Enabled" : "Bleed Disabled";
+  exportMetaSummary.textContent = `${dimensions.total}x${dimensions.total} px - ${bleedState}`;
   exportSizeSummary.textContent = `PNG ${dimensions.total} x ${dimensions.total} px`;
   exportSizeSummary.title = dimensions.bleed
     ? `${dimensions.trim}px export with ${dimensions.bleed}px print bleed on each side`

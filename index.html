@@ -6,8 +6,8 @@
     <meta name="description" content="Generate SVG and PNG QR codes for Wikimedia links.">
     <title>Wikimedia QR Generator</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=20260622-grid-columns">
-    <script type="module" src="src/app.js?v=20260622-grid-columns"></script>
+    <link rel="stylesheet" href="styles.css?v=20260622-publish-popover">
+    <script type="module" src="src/app.js?v=20260622-publish-popover"></script>
   </head>
   <body>
     <div class="app-shell theme-light" id="app-shell">
@@ -541,43 +541,61 @@
 
           <div class="export-bar">
             <div class="export-info">
-              <strong>Publish QR Assets</strong>
-              <p class="status-line" id="status-line" role="status"></p>
-              <ul class="scan-guidance" id="scan-guidance" aria-live="polite"></ul>
-            </div>
-
-            <div class="export-controls" aria-label="Export settings">
-              <label class="field-row export-size-control">
-                <span>Size</span>
-                <select id="export-size">
-                  <option value="300">300 px</option>
-                  <option value="600" selected>600 px</option>
-                  <option value="1200">1200 px</option>
-                </select>
-              </label>
-              <output class="export-size-summary" id="export-size-summary">PNG 660 x 660 px</output>
-              <label class="field-row field-row--checkbox export-bleed-control">
-                <input id="print-bleed" type="checkbox" checked>
-                <span>Bleed</span>
-              </label>
-              <label class="field-row field-row--checkbox export-inkscape-control">
-                <input id="inkscape-svg" type="checkbox">
-                <span>Inkscape</span>
-              </label>
+              <div class="export-icon" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="export-info-copy">
+                <strong>Publish QR Assets</strong>
+                <output class="export-meta-summary" id="export-meta-summary">600x600 px - Bleed Disabled</output>
+                <p class="status-line" id="status-line" role="status"></p>
+                <ul class="scan-guidance" id="scan-guidance" aria-live="polite"></ul>
+              </div>
             </div>
 
             <div class="actions">
+              <div class="export-settings-menu" id="export-settings-menu">
+                <button class="icon-action export-settings-button" id="export-settings-button" type="button" aria-label="Open publish configuration" aria-expanded="false" aria-controls="export-settings-popover" title="Publish configuration">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M19 13.5v-3l-2.2-.4a7.4 7.4 0 0 0-.8-1.9l1.3-1.8-2.1-2.1-1.8 1.3a7.4 7.4 0 0 0-1.9-.8L11.2 2H8.2l-.4 2.2a7.4 7.4 0 0 0-1.9.8L4.1 3.7 2 5.8l1.3 1.8a7.4 7.4 0 0 0-.8 1.9L.3 9.9v3l2.2.4c.2.7.5 1.3.8 1.9L2 17l2.1 2.1 1.8-1.3c.6.4 1.2.6 1.9.8l.4 2.2h3l.4-2.2c.7-.2 1.3-.5 1.9-.8l1.8 1.3 2.1-2.1-1.3-1.8c.4-.6.6-1.2.8-1.9l2.1-.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" transform="translate(2.3 1.2) scale(.82)"/>
+                  </svg>
+                </button>
+                <div class="export-settings-popover" id="export-settings-popover" role="dialog" aria-label="Publish configuration">
+                  <div class="export-popover-header">
+                    <strong>Publish Configuration</strong>
+                    <span>Interactive</span>
+                  </div>
+                  <div class="export-controls" aria-label="Export settings">
+                    <label class="field-row export-size-control">
+                      <span>Export size</span>
+                      <select id="export-size">
+                        <option value="300">300 px</option>
+                        <option value="600" selected>600 px</option>
+                        <option value="1200">1200 px</option>
+                      </select>
+                    </label>
+                    <output class="export-size-summary" id="export-size-summary">PNG 600 x 600 px</output>
+                    <label class="field-row field-row--checkbox export-bleed-control">
+                      <input id="print-bleed" type="checkbox">
+                      <span>Print bleed</span>
+                    </label>
+                    <label class="field-row field-row--checkbox export-inkscape-control">
+                      <input id="inkscape-svg" type="checkbox">
+                      <span>Inkscape data</span>
+                    </label>
+                    <button class="secondary-action export-svg-action" id="download-svg" type="button">Download SVG</button>
+                  </div>
+                </div>
+              </div>
               <button class="secondary-action export-copy-action" id="copy-svg" type="button" aria-label="Copy SVG" title="Copy SVG">Copy</button>
-              <button class="secondary-action export-svg-action" id="download-svg" type="button" aria-label="Download SVG" title="Download SVG">SVG</button>
-              <button class="primary-action export-png-action" id="download-png" type="button" aria-label="Download PNG" title="Download PNG">PNG</button>
+              <button class="secondary-action bulk-toggle-button" id="bulk-toggle" type="button" aria-expanded="false" aria-controls="bulk-generator-panel">Bulk</button>
+              <button class="primary-action export-png-action" id="download-png" type="button" aria-label="Export PNG" title="Export PNG">Export PNG <span aria-hidden="true">⌄</span></button>
             </div>
 
-            <details class="bulk-generator">
-              <summary title="Bulk ZIP generation">
-                <span>Bulk</span>
-                <small>Create ZIPs from URL lists or CSV rows</small>
-              </summary>
-
+            <section class="bulk-generator is-hidden" id="bulk-generator-panel" aria-label="Bulk generation">
               <div class="bulk-generator-body">
                 <label class="bulk-url-field" for="bulk-urls">
                   <span>URL list</span>
@@ -620,7 +638,7 @@
                   </div>
                 </details>
               </div>
-            </details>
+            </section>
           </div>
         </main>
       </div>
