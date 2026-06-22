@@ -277,203 +277,212 @@
               <p class="section-note">Same bundled Wikimedia glyph set as the logo generator; no uploads and no non-Wikimedia marks.</p>
             </section>
 
-            <section class="control-section" aria-labelledby="palette-heading">
-              <div class="section-heading">
-                <div class="section-title">
-                  <span class="status-dot status-dot-amber" aria-hidden="true"></span>
-                  <h2 id="palette-heading">4. Palette & Colors</h2>
-                </div>
-                <span class="section-meta">Color</span>
-              </div>
+            <details class="control-disclosure advanced-style-disclosure">
+              <summary>
+                <span>Advanced styling</span>
+                <small>Palette, dots, corners, and captions</small>
+              </summary>
 
-              <div class="options-grid" aria-label="QR colors">
-                <label class="field">
-                  <span>Color mode</span>
-                  <select id="color-mode">
-                    <option value="solid">Solid</option>
-                    <option value="gradient">Gradient</option>
-                  </select>
-                </label>
-
-                <div class="palette-panel">
-                  <span class="compact-label" id="ink-color-heading">Ink hue</span>
-                  <div class="color-row" role="group" aria-labelledby="ink-color-heading">
-                    <button type="button" data-color-target="foreground" data-color="#202122" style="background-color:#202122" aria-label="Codex black"></button>
-                    <button type="button" data-color-target="foreground" data-color="#006bb6" style="background-color:#006bb6" aria-label="Wikimedia blue"></button>
-                    <button type="button" data-color-target="foreground" data-color="#00866a" style="background-color:#00866a" aria-label="Wikimedia green"></button>
-                    <button type="button" data-color-target="foreground" data-color="#970302" style="background-color:#970302" aria-label="Wikimedia red"></button>
-                    <button type="button" data-color-target="foreground" data-color="#5748b5" style="background-color:#5748b5" aria-label="Wikimedia purple"></button>
-                    <input id="foreground" type="color" value="#202122" aria-label="Custom ink color">
+              <div class="control-disclosure-body">
+                <section class="control-section" aria-labelledby="palette-heading">
+                  <div class="section-heading">
+                    <div class="section-title">
+                      <span class="status-dot status-dot-amber" aria-hidden="true"></span>
+                      <h2 id="palette-heading">4. Palette & Colors</h2>
+                    </div>
+                    <span class="section-meta">Color</span>
                   </div>
-                </div>
 
-                <div class="palette-panel is-hidden" id="accent-color-field">
-                  <span class="compact-label" id="accent-color-heading">Gradient accent</span>
-                  <div class="color-row" role="group" aria-labelledby="accent-color-heading">
-                    <button type="button" data-color-target="foreground-secondary" data-color="#14866d" style="background-color:#14866d" aria-label="Green accent"></button>
-                    <button type="button" data-color-target="foreground-secondary" data-color="#049dff" style="background-color:#049dff" aria-label="Bright blue accent"></button>
-                    <button type="button" data-color-target="foreground-secondary" data-color="#e679a6" style="background-color:#e679a6" aria-label="Pink accent"></button>
-                    <button type="button" data-color-target="foreground-secondary" data-color="#f0bc00" style="background-color:#f0bc00" aria-label="Yellow accent"></button>
-                    <input id="foreground-secondary" type="color" value="#14866d" aria-label="Custom gradient accent">
+                  <div class="options-grid" aria-label="QR colors">
+                    <label class="field">
+                      <span>Color mode</span>
+                      <select id="color-mode">
+                        <option value="solid">Solid</option>
+                        <option value="gradient">Gradient</option>
+                      </select>
+                    </label>
+
+                    <div class="palette-panel">
+                      <span class="compact-label" id="ink-color-heading">Ink hue</span>
+                      <div class="color-row" role="group" aria-labelledby="ink-color-heading">
+                        <button type="button" data-color-target="foreground" data-color="#202122" style="background-color:#202122" aria-label="Codex black"></button>
+                        <button type="button" data-color-target="foreground" data-color="#006bb6" style="background-color:#006bb6" aria-label="Wikimedia blue"></button>
+                        <button type="button" data-color-target="foreground" data-color="#00866a" style="background-color:#00866a" aria-label="Wikimedia green"></button>
+                        <button type="button" data-color-target="foreground" data-color="#970302" style="background-color:#970302" aria-label="Wikimedia red"></button>
+                        <button type="button" data-color-target="foreground" data-color="#5748b5" style="background-color:#5748b5" aria-label="Wikimedia purple"></button>
+                        <input id="foreground" type="color" value="#202122" aria-label="Custom ink color">
+                      </div>
+                    </div>
+
+                    <div class="palette-panel is-hidden" id="accent-color-field">
+                      <span class="compact-label" id="accent-color-heading">Gradient accent</span>
+                      <div class="color-row" role="group" aria-labelledby="accent-color-heading">
+                        <button type="button" data-color-target="foreground-secondary" data-color="#14866d" style="background-color:#14866d" aria-label="Green accent"></button>
+                        <button type="button" data-color-target="foreground-secondary" data-color="#049dff" style="background-color:#049dff" aria-label="Bright blue accent"></button>
+                        <button type="button" data-color-target="foreground-secondary" data-color="#e679a6" style="background-color:#e679a6" aria-label="Pink accent"></button>
+                        <button type="button" data-color-target="foreground-secondary" data-color="#f0bc00" style="background-color:#f0bc00" aria-label="Yellow accent"></button>
+                        <input id="foreground-secondary" type="color" value="#14866d" aria-label="Custom gradient accent">
+                      </div>
+                    </div>
+
+                    <div class="palette-panel">
+                      <span class="compact-label" id="paper-color-heading">Paper</span>
+                      <div class="color-row" role="group" aria-labelledby="paper-color-heading">
+                        <button type="button" data-color-target="background" data-color="#ffffff" style="background-color:#ffffff" aria-label="White paper"></button>
+                        <button type="button" data-color-target="background" data-color="#f8fafc" style="background-color:#f8fafc" aria-label="Soft paper"></button>
+                        <button type="button" data-color-target="background" data-color="#0f172a" style="background-color:#0f172a" aria-label="Dark paper"></button>
+                        <input id="background" type="color" value="#ffffff" aria-label="Custom paper color">
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </section>
 
-                <div class="palette-panel">
-                  <span class="compact-label" id="paper-color-heading">Paper</span>
-                  <div class="color-row" role="group" aria-labelledby="paper-color-heading">
-                    <button type="button" data-color-target="background" data-color="#ffffff" style="background-color:#ffffff" aria-label="White paper"></button>
-                    <button type="button" data-color-target="background" data-color="#f8fafc" style="background-color:#f8fafc" aria-label="Soft paper"></button>
-                    <button type="button" data-color-target="background" data-color="#0f172a" style="background-color:#0f172a" aria-label="Dark paper"></button>
-                    <input id="background" type="color" value="#ffffff" aria-label="Custom paper color">
+                <section class="control-section" aria-labelledby="shape-heading">
+                  <div class="section-heading">
+                    <div class="section-title">
+                      <span class="status-dot" aria-hidden="true"></span>
+                      <h2 id="shape-heading">5. Dots & Corner Shapes</h2>
+                    </div>
+                    <span class="section-meta">SVG</span>
                   </div>
-                </div>
+
+                  <div class="options-grid" aria-label="QR shape options">
+                    <label class="field">
+                      <span>Dot pattern</span>
+                      <select id="module-style">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="dot">Dots</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Corner squares</span>
+                      <select id="corner-square-style">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="extra-rounded">Extra rounded</option>
+                        <option value="dot">Circular ring</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Corner dots</span>
+                      <select id="corner-dot-style">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="dot">Circle</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Error correction</span>
+                      <select id="error-correction">
+                        <option value="medium">Medium</option>
+                        <option value="quartile">Quartile</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Quiet zone</span>
+                      <input id="margin" type="range" min="2" max="8" value="4">
+                    </label>
+
+                    <label class="field">
+                      <span>Preview size</span>
+                      <input id="size" type="range" min="192" max="1024" step="16" value="512">
+                    </label>
+                  </div>
+                </section>
+
+                <section class="control-section" aria-labelledby="caption-heading">
+                  <div class="section-heading">
+                    <div class="section-title">
+                      <span class="status-dot status-dot-green" aria-hidden="true"></span>
+                      <h2 id="caption-heading">6. Captions</h2>
+                    </div>
+                    <span class="section-meta">Text</span>
+                  </div>
+
+                  <div class="options-grid" aria-label="QR caption options">
+                    <label class="field field--wide">
+                      <span>Text above QR</span>
+                      <input id="caption-top" type="text" maxlength="120" placeholder="Scan to join Wikimania">
+                    </label>
+
+                    <label class="field field--wide">
+                      <span>Text below QR</span>
+                      <input id="caption-bottom" type="text" maxlength="120" placeholder="wikimedia.org">
+                    </label>
+
+                    <label class="field">
+                      <span>Font</span>
+                      <select id="caption-font">
+                        <option value="inter" selected>Inter</option>
+                        <option value="noto-sans">Noto Sans</option>
+                        <option value="open-sans">Open Sans</option>
+                        <option value="source-sans-3">Source Sans 3</option>
+                        <option value="roboto">Roboto</option>
+                        <option value="fira-sans">Fira Sans</option>
+                        <option value="atkinson-hyperlegible">Atkinson Hyperlegible</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Text size</span>
+                      <input id="caption-size" type="range" min="4" max="12" value="6">
+                    </label>
+
+                    <label class="field">
+                      <span>Text weight</span>
+                      <select id="caption-weight">
+                        <option value="400">Regular</option>
+                        <option value="600" selected>Semibold</option>
+                        <option value="700">Bold</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Text color</span>
+                      <input id="caption-color" type="color" value="#202122">
+                    </label>
+
+                    <label class="checkbox-row field--wide">
+                      <input id="caption-corners" type="checkbox">
+                      <span>Show page corners</span>
+                    </label>
+
+                    <label class="field">
+                      <span>Corner shape</span>
+                      <select id="caption-corner-style">
+                        <option value="right" selected>Right angle</option>
+                        <option value="rounded">Round angle</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Corner color mode</span>
+                      <select id="caption-corner-color-mode">
+                        <option value="solid" selected>Solid</option>
+                        <option value="gradient">Gradient</option>
+                      </select>
+                    </label>
+
+                    <label class="field">
+                      <span>Corner color</span>
+                      <input id="caption-corner-color" type="color" value="#202122">
+                    </label>
+
+                    <label class="field">
+                      <span>Gradient end</span>
+                      <input id="caption-corner-color-secondary" type="color" value="#006bb6">
+                    </label>
+                  </div>
+                </section>
               </div>
-            </section>
-
-            <section class="control-section" aria-labelledby="shape-heading">
-              <div class="section-heading">
-                <div class="section-title">
-                  <span class="status-dot" aria-hidden="true"></span>
-                  <h2 id="shape-heading">5. Dots & Corner Shapes</h2>
-                </div>
-                <span class="section-meta">SVG</span>
-              </div>
-
-              <div class="options-grid" aria-label="QR shape options">
-                <label class="field">
-                  <span>Dot pattern</span>
-                  <select id="module-style">
-                    <option value="square">Square</option>
-                    <option value="rounded">Rounded</option>
-                    <option value="dot">Dots</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Corner squares</span>
-                  <select id="corner-square-style">
-                    <option value="square">Square</option>
-                    <option value="rounded">Rounded</option>
-                    <option value="extra-rounded">Extra rounded</option>
-                    <option value="dot">Circular ring</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Corner dots</span>
-                  <select id="corner-dot-style">
-                    <option value="square">Square</option>
-                    <option value="rounded">Rounded</option>
-                    <option value="dot">Circle</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Error correction</span>
-                  <select id="error-correction">
-                    <option value="medium">Medium</option>
-                    <option value="quartile">Quartile</option>
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Quiet zone</span>
-                  <input id="margin" type="range" min="2" max="8" value="4">
-                </label>
-
-                <label class="field">
-                  <span>Preview size</span>
-                  <input id="size" type="range" min="192" max="1024" step="16" value="512">
-                </label>
-              </div>
-            </section>
-
-            <section class="control-section" aria-labelledby="caption-heading">
-              <div class="section-heading">
-                <div class="section-title">
-                  <span class="status-dot status-dot-green" aria-hidden="true"></span>
-                  <h2 id="caption-heading">6. Captions</h2>
-                </div>
-                <span class="section-meta">Text</span>
-              </div>
-
-              <div class="options-grid" aria-label="QR caption options">
-                <label class="field field--wide">
-                  <span>Text above QR</span>
-                  <input id="caption-top" type="text" maxlength="120" placeholder="Scan to join Wikimania">
-                </label>
-
-                <label class="field field--wide">
-                  <span>Text below QR</span>
-                  <input id="caption-bottom" type="text" maxlength="120" placeholder="wikimedia.org">
-                </label>
-
-                <label class="field">
-                  <span>Font</span>
-                  <select id="caption-font">
-                    <option value="inter" selected>Inter</option>
-                    <option value="noto-sans">Noto Sans</option>
-                    <option value="open-sans">Open Sans</option>
-                    <option value="source-sans-3">Source Sans 3</option>
-                    <option value="roboto">Roboto</option>
-                    <option value="fira-sans">Fira Sans</option>
-                    <option value="atkinson-hyperlegible">Atkinson Hyperlegible</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Text size</span>
-                  <input id="caption-size" type="range" min="4" max="12" value="6">
-                </label>
-
-                <label class="field">
-                  <span>Text weight</span>
-                  <select id="caption-weight">
-                    <option value="400">Regular</option>
-                    <option value="600" selected>Semibold</option>
-                    <option value="700">Bold</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Text color</span>
-                  <input id="caption-color" type="color" value="#202122">
-                </label>
-
-                <label class="checkbox-row field--wide">
-                  <input id="caption-corners" type="checkbox">
-                  <span>Show page corners</span>
-                </label>
-
-                <label class="field">
-                  <span>Corner shape</span>
-                  <select id="caption-corner-style">
-                    <option value="right" selected>Right angle</option>
-                    <option value="rounded">Round angle</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Corner color mode</span>
-                  <select id="caption-corner-color-mode">
-                    <option value="solid" selected>Solid</option>
-                    <option value="gradient">Gradient</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span>Corner color</span>
-                  <input id="caption-corner-color" type="color" value="#202122">
-                </label>
-
-                <label class="field">
-                  <span>Gradient end</span>
-                  <input id="caption-corner-color-secondary" type="color" value="#006bb6">
-                </label>
-              </div>
-            </section>
+            </details>
           </form>
         </aside>
 
@@ -528,48 +537,55 @@
               <button class="primary-action" id="download-png" type="button">Download PNG</button>
             </div>
 
-            <div class="bulk-generator" aria-label="Bulk generation">
-              <label class="bulk-url-field" for="bulk-urls">
+            <details class="bulk-generator">
+              <summary>
                 <span>Bulk generation</span>
-                <textarea id="bulk-urls" rows="3" spellcheck="false" placeholder="https://en.wikipedia.org/wiki/QR_code, https://commons.wikimedia.org/"></textarea>
-              </label>
-              <div class="bulk-actions">
-                <button class="secondary-action" id="bulk-generate" type="button">Generate ZIP</button>
-                <output class="bulk-status" id="bulk-status" aria-live="polite"></output>
-              </div>
+                <small>Create ZIPs from URL lists or CSV rows</small>
+              </summary>
 
-              <details class="advanced-bulk">
-                <summary>
-                  <span>Advanced CSV bulk</span>
-                  <small>Blank cells inherit the current design</small>
-                </summary>
+              <div class="bulk-generator-body">
+                <label class="bulk-url-field" for="bulk-urls">
+                  <span>URL list</span>
+                  <textarea id="bulk-urls" rows="3" spellcheck="false" placeholder="https://en.wikipedia.org/wiki/QR_code, https://commons.wikimedia.org/"></textarea>
+                </label>
+                <div class="bulk-actions">
+                  <button class="secondary-action" id="bulk-generate" type="button">Generate ZIP</button>
+                  <output class="bulk-status" id="bulk-status" aria-live="polite"></output>
+                </div>
 
-                <div class="advanced-bulk-grid">
-                  <label class="bulk-url-field" for="advanced-bulk-csv">
-                    <span>CSV input</span>
-                    <textarea id="advanced-bulk-csv" rows="7" spellcheck="false" placeholder="filename,contentType,url,logo,foreground,captionTop&#10;wikimania-room,url,https://wikimania.wikimedia.org/,wikimania,#006bb6,Check West Room Planning"></textarea>
-                  </label>
+                <details class="advanced-bulk">
+                  <summary>
+                    <span>Advanced CSV bulk</span>
+                    <small>Blank cells inherit the current design</small>
+                  </summary>
 
-                  <div class="advanced-bulk-panel">
-                    <label class="advanced-bulk-file">
-                      <span>Import CSV</span>
-                      <input id="advanced-bulk-file" type="file" accept=".csv,text/csv">
+                  <div class="advanced-bulk-grid">
+                    <label class="bulk-url-field" for="advanced-bulk-csv">
+                      <span>CSV input</span>
+                      <textarea id="advanced-bulk-csv" rows="7" spellcheck="false" placeholder="filename,contentType,url,logo,foreground,captionTop&#10;wikimania-room,url,https://wikimania.wikimedia.org/,wikimania,#006bb6,Check West Room Planning"></textarea>
                     </label>
 
-                    <div class="advanced-bulk-actions">
-                      <button class="secondary-action" id="advanced-bulk-template" type="button">Download template</button>
-                      <button class="secondary-action" id="advanced-bulk-validate" type="button">Validate CSV</button>
-                      <button class="primary-action" id="advanced-bulk-generate" type="button">Generate advanced ZIP</button>
-                    </div>
+                    <div class="advanced-bulk-panel">
+                      <label class="advanced-bulk-file">
+                        <span>Import CSV</span>
+                        <input id="advanced-bulk-file" type="file" accept=".csv,text/csv">
+                      </label>
 
-                    <div class="advanced-bulk-progress" aria-label="Advanced bulk progress">
-                      <progress id="advanced-bulk-progress" max="1" value="0"></progress>
-                      <output class="bulk-status" id="advanced-bulk-status" aria-live="polite"></output>
+                      <div class="advanced-bulk-actions">
+                        <button class="secondary-action" id="advanced-bulk-template" type="button">Download template</button>
+                        <button class="secondary-action" id="advanced-bulk-validate" type="button">Validate CSV</button>
+                        <button class="primary-action" id="advanced-bulk-generate" type="button">Generate advanced ZIP</button>
+                      </div>
+
+                      <div class="advanced-bulk-progress" aria-label="Advanced bulk progress">
+                        <progress id="advanced-bulk-progress" max="1" value="0"></progress>
+                        <output class="bulk-status" id="advanced-bulk-status" aria-live="polite"></output>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </details>
-            </div>
+                </details>
+              </div>
+            </details>
           </div>
         </main>
       </div>
