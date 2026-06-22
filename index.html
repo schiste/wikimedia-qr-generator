@@ -548,33 +548,33 @@
 
             <div class="export-controls" aria-label="Export settings">
               <label class="field-row">
-                <span>Export size</span>
+                <span>Size</span>
                 <select id="export-size">
                   <option value="300">300 px</option>
                   <option value="600" selected>600 px</option>
                   <option value="1200">1200 px</option>
                 </select>
               </label>
-              <output class="export-size-summary" id="export-size-summary">Final PNG: 660 x 660 px</output>
+              <output class="export-size-summary" id="export-size-summary">PNG 660 x 660 px</output>
               <label class="field-row field-row--checkbox">
                 <input id="print-bleed" type="checkbox" checked>
-                <span>Print bleed</span>
+                <span>Bleed</span>
               </label>
               <label class="field-row field-row--checkbox">
                 <input id="inkscape-svg" type="checkbox">
-                <span>Add Inkscape data</span>
+                <span>Inkscape</span>
               </label>
             </div>
 
             <div class="actions">
-              <button class="secondary-action" id="copy-svg" type="button">Copy SVG</button>
-              <button class="secondary-action" id="download-svg" type="button">Download SVG</button>
-              <button class="primary-action" id="download-png" type="button">Download PNG</button>
+              <button class="secondary-action" id="copy-svg" type="button" aria-label="Copy SVG" title="Copy SVG">Copy</button>
+              <button class="secondary-action" id="download-svg" type="button" aria-label="Download SVG" title="Download SVG">SVG</button>
+              <button class="primary-action" id="download-png" type="button" aria-label="Download PNG" title="Download PNG">PNG</button>
             </div>
 
             <details class="bulk-generator">
               <summary>
-                <span>Bulk generation</span>
+                <span>Bulk ZIP</span>
                 <small>Create ZIPs from URL lists or CSV rows</small>
               </summary>
 

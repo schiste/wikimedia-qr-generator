@@ -1110,9 +1110,10 @@ function updateScanGuidance(config) {
 
 function updateExportSizeSummary(config) {
   const dimensions = getExportPixelSize(Number(config.exportSize), config.printBleed);
-  exportSizeSummary.textContent = dimensions.bleed
-    ? `Final PNG: ${dimensions.total} x ${dimensions.total} px (${dimensions.trim}px + ${dimensions.bleed}px bleed)`
-    : `Final PNG: ${dimensions.total} x ${dimensions.total} px`;
+  exportSizeSummary.textContent = `PNG ${dimensions.total} x ${dimensions.total} px`;
+  exportSizeSummary.title = dimensions.bleed
+    ? `${dimensions.trim}px export with ${dimensions.bleed}px print bleed on each side`
+    : `${dimensions.trim}px export without print bleed`;
 }
 
 function getScanGuidance(config) {
