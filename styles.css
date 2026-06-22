@@ -1667,12 +1667,16 @@ a:focus-visible {
 .export-bar {
   display: grid;
   min-height: 82px;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
+  grid-template-columns: minmax(260px, 1fr) minmax(210px, 240px) minmax(360px, auto);
+  align-items: start;
   gap: 16px;
   border-top: 1px solid var(--line);
   background: var(--panel-strong);
   padding: 16px 24px;
+}
+
+.export-info {
+  min-width: 0;
 }
 
 .bulk-generator {
@@ -1907,7 +1911,6 @@ a:focus-visible {
 
 .export-controls {
   display: grid;
-  width: 200px;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
@@ -1920,9 +1923,9 @@ a:focus-visible {
 }
 
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(118px, max-content));
+  justify-content: end;
   gap: 10px;
 }
 
@@ -1937,6 +1940,7 @@ a:focus-visible {
   padding: 0 18px;
   font-size: 13px;
   font-weight: 760;
+  white-space: nowrap;
 }
 
 .primary-action {
@@ -2041,6 +2045,16 @@ a:focus-visible {
 
   .mobile-edit-link {
     display: inline-flex;
+  }
+
+  .export-bar {
+    grid-template-columns: minmax(0, 1fr) minmax(210px, 240px);
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
   }
 }
 
