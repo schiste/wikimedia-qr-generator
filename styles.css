@@ -291,7 +291,7 @@ a:focus-visible {
   display: contents;
 }
 
-.design-actions-menu-button {
+.header-button.design-actions-menu-button {
   display: none;
 }
 
@@ -1558,7 +1558,7 @@ a:focus-visible {
   gap: 10px;
 }
 
-.mobile-edit-link {
+a.mobile-edit-link {
   display: none;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1570,7 +1570,7 @@ a:focus-visible {
   text-decoration: none;
 }
 
-.mobile-edit-link:hover {
+a.mobile-edit-link:hover {
   border-color: var(--accent);
   background: var(--surface-hover);
 }
@@ -2043,7 +2043,7 @@ a:focus-visible {
     overflow-wrap: anywhere;
   }
 
-  .mobile-edit-link {
+  a.mobile-edit-link {
     display: inline-flex;
   }
 
@@ -2105,7 +2105,7 @@ a:focus-visible {
     display: block;
   }
 
-  .design-actions-menu-button {
+  .header-button.design-actions-menu-button {
     display: inline-flex;
     padding: 8px 10px;
   }
