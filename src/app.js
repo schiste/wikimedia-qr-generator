@@ -90,6 +90,7 @@ const captionCornerColorModeInput = document.querySelector("#caption-corner-colo
 const captionCornerColorInput = document.querySelector("#caption-corner-color");
 const captionCornerColorSecondaryInput = document.querySelector("#caption-corner-color-secondary");
 const accentColorField = document.querySelector("#accent-color-field");
+const resetSizeControlsButton = document.querySelector("#reset-size-controls");
 const presetButtons = document.querySelectorAll("[data-preset]");
 const colorButtons = document.querySelectorAll("[data-color-target]");
 const logoSelect = document.querySelector("#logo-select");
@@ -100,6 +101,7 @@ const logoDetailSource = document.querySelector("#logo-detail-source");
 const logoDetailMode = document.querySelector("#logo-detail-mode");
 const logoSizeField = document.querySelector("#logo-size-field");
 const logoSizeInput = document.querySelector("#logo-size");
+const logoSizeValueOutput = document.querySelector("#logo-size-value");
 const openLogoLibraryButton = document.querySelector("#open-logo-library");
 const logoLibraryDialog = document.querySelector("#logo-library-dialog");
 const closeLogoLibraryButton = document.querySelector("#close-logo-library");
@@ -113,6 +115,9 @@ const qrMetaOutput = document.querySelector("#qr-meta");
 const statusLine = document.querySelector("#status-line");
 const scanStatusText = document.querySelector("#scan-status-text");
 const exportSizeInput = document.querySelector("#export-size");
+const marginValueOutput = document.querySelector("#margin-value");
+const sizeValueOutput = document.querySelector("#size-value");
+const captionSizeValueOutput = document.querySelector("#caption-size-value");
 const printBleedInput = document.querySelector("#print-bleed");
 const inkscapeSvgInput = document.querySelector("#inkscape-svg");
 const copySvgButton = document.querySelector("#copy-svg");
@@ -292,6 +297,7 @@ refreshQrButton.addEventListener("click", () => {
   render();
   setStatus("QR preview refreshed.", "success");
 });
+resetSizeControlsButton.addEventListener("click", resetSizeControls);
 logoSelect.addEventListener("change", () => {
   selectLogo(logoSelect.value);
 });
@@ -447,6 +453,7 @@ function render() {
   try {
     logoSizeField.classList.toggle("is-hidden", selectedLogo === "none");
     accentColorField.classList.toggle("is-hidden", colorModeInput.value !== "gradient");
+    updateRangeValueOutputs();
     updateLogoDetails();
     syncColorRows();
 
@@ -1062,6 +1069,22 @@ function syncColorRows() {
     const active = target && target.value.toLowerCase() === button.dataset.color.toLowerCase();
     button.classList.toggle("active", Boolean(active));
   }
+}
+
+function updateRangeValueOutputs() {
+  logoSizeValueOutput.textContent = `${logoSizeInput.value}%`;
+  marginValueOutput.textContent = `${marginInput.value} module${marginInput.value === "1" ? "" : "s"}`;
+  sizeValueOutput.textContent = `${sizeInput.value} px`;
+  captionSizeValueOutput.textContent = `${captionSizeInput.value}%`;
+}
+
+function resetSizeControls() {
+  marginInput.value = "4";
+  sizeInput.value = "512";
+  logoSizeInput.value = "24";
+  captionSizeInput.value = "6";
+  render();
+  setStatus("Size controls reset.", "success");
 }
 
 function setDesignsMenuOpen(open) {

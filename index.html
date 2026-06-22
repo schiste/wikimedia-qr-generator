@@ -286,7 +286,10 @@
                 </dl>
 
                 <label class="field" id="logo-size-field">
-                  <span>Logo size</span>
+                  <span class="field-label-row">
+                    <span>Logo size</span>
+                    <output id="logo-size-value" for="logo-size">24%</output>
+                  </span>
                   <input id="logo-size" type="range" min="18" max="32" value="24">
                 </label>
               </div>
@@ -301,6 +304,10 @@
               </summary>
 
               <div class="control-disclosure-body">
+                <div class="control-utility-row">
+                  <button class="secondary-action control-reset-button" id="reset-size-controls" type="button">Reset sizes</button>
+                </div>
+
                 <section class="control-section" aria-labelledby="palette-heading">
                   <div class="section-heading">
                     <div class="section-title">
@@ -403,12 +410,18 @@
                     </label>
 
                     <label class="field">
-                      <span>Quiet zone</span>
+                      <span class="field-label-row">
+                        <span>Quiet zone</span>
+                        <output id="margin-value" for="margin">4 modules</output>
+                      </span>
                       <input id="margin" type="range" min="2" max="8" value="4">
                     </label>
 
                     <label class="field">
-                      <span>Preview size</span>
+                      <span class="field-label-row">
+                        <span>Preview size</span>
+                        <output id="size-value" for="size">512 px</output>
+                      </span>
                       <input id="size" type="range" min="192" max="1024" step="16" value="512">
                     </label>
                   </div>
@@ -448,7 +461,10 @@
                     </label>
 
                     <label class="field">
-                      <span>Text size</span>
+                      <span class="field-label-row">
+                        <span>Text size</span>
+                        <output id="caption-size-value" for="caption-size">6%</output>
+                      </span>
                       <input id="caption-size" type="range" min="4" max="12" value="6">
                     </label>
 
